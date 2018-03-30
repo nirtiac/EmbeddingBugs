@@ -1,0 +1,7 @@
+librari
+better
+faster
+java
+applic
+swt
+swing
