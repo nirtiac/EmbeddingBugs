@@ -60,15 +60,18 @@ def preprocessLang(lang):
         :param code: all the natural language from one post
         :return: preprocessed language tokens
         '''
+    preLang=[]
     other_words = ['http']
-    word_list = nltk.word_tokenize(lang)
-    word_list = [word.lower() for word in word_list if word.isalpha()]
-    word_list = [w for w in word_list if not w in stopwords.words('english')]
-    word_list = [w for w in word_list if not w in other_words]
-    word_list = [w for w in word_list if not len(w) == 1]
+    sent_text = nltk.sent_tokenize(lang)
+    for s in sent_text:
+        word_list = nltk.word_tokenize(s)
+        word_list = [word.lower() for word in word_list if word.isalpha()]
+        word_list = [w for w in word_list if not w in stopwords.words('english')]
+        word_list = [w for w in word_list if not w in other_words]
+        word_list = [w for w in word_list if not len(w) == 1]
 
-    ps = PorterStemmer()
-    preLang = [ps.stem(w) for w in word_list]
+        ps = PorterStemmer()
+        preLang.append([ps.stem(w) for w in word_list])
     #### Decided to skip this, due to several issues and huge slow down in execution speed.
     #for w in word_list:
     #    if w in words.words():
@@ -115,8 +118,13 @@ def readXMLFile():
                 preCode = preprocessCode(code)
                 preLang =preprocessLang(lang)
                 for token in preLang:
-                    file.write(token)
-                    file.write(",")
+                    if len(token)>=1:
+                        file.write("[")
+                        for t in token:
+                            file.write(t)
+                            file.write(",")
+                        file.write("]")
+                        file.write(",")
                 file.write("\n")
                 for token in preCode:
                     file.write(token)
