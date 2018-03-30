@@ -1,2 +1,2 @@
-swt,java,app,often,want,return,inform,insid,call,best,way,found,far,think,allow,arraylist,better,contain,use,easier,way,altogeth,
+[swt,java,app,often,want,return,inform,insid,call,],[best,way,found,far,think,allow,arraylist,better,contain,use,easier,way,altogeth,],
 @final@,@array@,@list@,@arraylist@,@integer@,@result@,@new@,@array@,@list@,@arraylist@,@integer@,@new@,@runnable@,@public@,@void@,@run@,@message@,@box@,@messagebox@,@mb@,@set@,@up@,@messagebox@,@if@,

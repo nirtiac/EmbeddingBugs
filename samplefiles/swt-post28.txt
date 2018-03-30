@@ -1,1 +1,1 @@
-java,project,swt,desktop,app,want,inform,user,event,anim,notif,box,actual,requir,anim,someth,like,msn,im,nofollow,noreferr,jtoaster,swing,wonder,implement,base,thank,
+[java,project,swt,desktop,app,want,inform,user,event,anim,notif,box,actual,requir,anim,],[someth,like,msn,im,nofollow,noreferr,jtoaster,swing,wonder,implement,base,thank,],

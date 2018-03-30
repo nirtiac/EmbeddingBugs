@@ -1,1 +1,1 @@
-javacor,class,includ,creat,method,allow,get,ityperoot,represent,class,file,compil,unit,given,handl,identifi,embodi,locat,howev,tri,find,typeroot,one,correspond,specif,implement,think,scan,type,system,get,type,root,even,sure,compar,help,would,
+[javacor,class,includ,creat,method,allow,get,ityperoot,represent,class,file,compil,unit,given,handl,identifi,embodi,locat,howev,tri,find,typeroot,one,correspond,specif,implement,think,scan,type,system,get,type,root,even,sure,compar,help,would,],

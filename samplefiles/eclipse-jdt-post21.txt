@@ -1,1 +1,1 @@
-tri,implement,hyperlinkdetector,eclips,callback,method,give,itextview,work,get,project,ipath,ifil,viewer,idocu,br,appar,concept,idocu,allow,access,content,regardless,sourc,come,check,activ,editor,part,workbench,sinc,java,code,work,actual,type,javasourceview,
+[tri,implement,hyperlinkdetector,eclips,callback,method,give,itextview,work,get,project,ipath,ifil,viewer,idocu,br,appar,concept,idocu,allow,access,content,regardless,sourc,],[come,check,activ,editor,part,workbench,sinc,java,code,work,actual,type,javasourceview,],

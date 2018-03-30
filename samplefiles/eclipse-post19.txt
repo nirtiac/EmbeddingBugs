@@ -1,1 +1,1 @@
-code,applic,use,eclips,rcp,troubl,test,interact,two,side,contain,lot,gui,provid,remot,got,idea,
+[code,applic,use,eclips,rcp,],[troubl,test,interact,two,side,contain,lot,gui,provid,remot,got,idea,],

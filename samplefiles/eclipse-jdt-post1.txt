@@ -1,2 +1,2 @@
-want,follow,import,import,jdt,within,eclips,
+[want,follow,import,import,jdt,within,eclips,],
 @import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,@import@,

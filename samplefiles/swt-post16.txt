@@ -1,1 +1,1 @@
-librari,better,faster,java,applic,swt,swing,
+[librari,better,faster,java,applic,swt,swing,],
