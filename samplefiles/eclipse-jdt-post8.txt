@@ -1,9 +1,1 @@
-want
-project
-build
-path
-default
-src
-use
-java
-api
+want,project,build,path,default,src,use,java,api,
