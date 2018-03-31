@@ -1,7 +1,1 @@
-look
-good
-gui
-design
-swing
-eclips
-prefer
+[look,good,gui,design,swing,eclips,],[prefer,],

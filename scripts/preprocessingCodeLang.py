@@ -3,7 +3,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import re
-
+from nltk.corpus import words
 
 
 def camel_case_split(identifier):
@@ -35,14 +35,22 @@ def preprocessCode(code):
     word_list = [w for w in word_list if not len(w)==1]
     for w in word_list:
         temp = camel_case_split(w)
-        for t in temp:
-            if len(t)!=1:
-                t=t.lower()
-                preCode.append("@"+t+"@")
-        w=w.lower()
-        preCode.append("@"+w+"@")
+        if len(temp)>1:
+            for t in temp:
+                t = "@"+t+"@"
+                if (len(t)!=1) :
+                    t=t.lower()
+                    preCode.append(t)
+            w="@"+w+"@"
+            w=w.lower()
+            #if w not in preCode:
+            preCode.append(w)
+        else:
+            w=w.lower()
+            w = "@"+w+"@"
+            #if w not in preCode:
+            preCode.append(w)
     i = i+1
-    preCode = list(set(preCode))
     return preCode
 
 
@@ -52,14 +60,24 @@ def preprocessLang(lang):
         :param code: all the natural language from one post
         :return: preprocessed language tokens
         '''
+    preLang=[]
     other_words = ['http']
-    word_list = nltk.word_tokenize(lang)
-    words = [word.lower() for word in word_list if word.isalpha()]
-    words = [w for w in words if not w in stopwords.words('english')]
-    words = [w for w in words if not w in other_words]
-    words = [w for w in words if not len(w) == 1]
-    ps = PorterStemmer()
-    preLang = [ps.stem(w) for w in words]
+    sent_text = nltk.sent_tokenize(lang)
+    for s in sent_text:
+        word_list = nltk.word_tokenize(s)
+        word_list = [word.lower() for word in word_list if word.isalpha()]
+        word_list = [w for w in word_list if not w in stopwords.words('english')]
+        word_list = [w for w in word_list if not w in other_words]
+        word_list = [w for w in word_list if not len(w) == 1]
+
+        ps = PorterStemmer()
+        preLang.append([ps.stem(w) for w in word_list])
+    #### Decided to skip this, due to several issues and huge slow down in execution speed.
+    #for w in word_list:
+    #    if w in words.words():
+    #        preLang.append(w)
+    #    else:
+    #        preLang.append("@"+w+"@")
     return preLang
 
 
@@ -77,6 +95,7 @@ def readXMLFile():
         for child in root:
             i=i+1
             file = open(project+"-post"+str(i)+".txt", "w")
+            print(project+"-post"+str(i)+".txt")
             if (child.attrib['Body'] is not None):
                 body = child.attrib['Body']
                 str_idx = body.find('<pre><code>')
@@ -99,11 +118,17 @@ def readXMLFile():
                 preCode = preprocessCode(code)
                 preLang =preprocessLang(lang)
                 for token in preLang:
-                    file.write(token)
-                    file.write("\n")
+                    if len(token)>=1:
+                        file.write("[")
+                        for t in token:
+                            file.write(t)
+                            file.write(",")
+                        file.write("]")
+                        file.write(",")
+                file.write("\n")
                 for token in preCode:
                     file.write(token)
-                    file.write("\n")
+                    file.write(",")
 
             file.close()
 

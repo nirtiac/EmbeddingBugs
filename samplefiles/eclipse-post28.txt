@@ -1,15 +1,1 @@
-file
-search
-eclips
-includ
-code
-directori
-default
-tri
-exclud
-build
-path
-still
-appear
-file
-search
+[file,search,eclips,includ,code,directori,default,],[tri,exclud,build,path,still,appear,file,search,],

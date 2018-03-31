@@ -1,14 +1,2 @@
-upgrad
-birt
-ton
-log
-thought
-rid
-@validate@
-@xml@
-@not@
-@choice@
-@any@
-@allowed@
-@validatexml@
-@severe@
+upgrad,birt,ton,log,thought,rid,
+@validate@,@xml@,@validatexml@,@severe@,@not@,@allowed@,@choice@,@any@,
