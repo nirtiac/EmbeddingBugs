@@ -60,7 +60,7 @@ described in the following section."""
     #y is ground truth data
     #EXCEPT THATS NOT TRUE CAUSE YOURE PROVIDING THE DATA
     def my_scorer(self, estimator, X, y):
-
+        #THIS WILL CALL MAP AND MRR
 
         #this needs to be a floating point number
         return final_score
