@@ -10,7 +10,11 @@ class EBModel:
     def __init__(self, project):
         self.project = project
 
+    def MAP(self):
+        pass
 
+    def MRR(self):
+        pass
 
     def maxSim(self, word, document, w2v):
         pass
