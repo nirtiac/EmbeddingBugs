@@ -10,26 +10,39 @@ class EBModel:
     def __init__(self, project):
         self.project = project
 
+    #CURRENTLY DOING THIS
+    def asymmetric_similarity(self):
+        pass
 
     #https://radimrehurek.com/gensim/sklearn_api/w2vmodel.html
     #given our stackoverflow data, we need to create a language model. Stackoverflow data
     #should be in the form of:
 
+   #estimator is our trained w2v model
+   #X is validation data
+    #y is ground truth data
+    def my_scorer(self, estimator, X, y):
 
+
+        #this needs to be a floating point number
+        return final_score
     #fulls specs here https://radimrehurek.com/gensim/models/word2vec.html
-    def train(self, parameter_set):
-        pass
+    def train(self):
 
-    def test(self):
-        pass
+        #this describes everything you want to search over
+        parameters = {'size': [100, 250, 500],
+                      'window': [5, 10],
+                      'sg': [1],
+                      'workers': [16],
+                      'hs': [0],
+                      'negative': [25],
+                      'iter': [1]
+                      }
 
-    def evaluate(self):
-        pass
+        w2v = W2VTransformer()
+        clf = GridSearchCV(w2v, parameters, scoring=self.my_scorer, verbose=2, n_jobs=3)
+        return clf
 
-    #use http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV
-    #find the optimal hyperparameter settings, given the evaluation and the train
-    def optimize(self):
-        pass
+    def test(self, clf, X, y):
+        return self.my_scorer(clf, X, y)
 
-    def asymmetric_similarity(self):
-        pass
