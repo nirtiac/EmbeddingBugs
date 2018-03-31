@@ -26,7 +26,6 @@ class EBModel:
     def evaluate(self):
         pass
 
-
     #use http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html#sklearn.model_selection.GridSearchCV
     #find the optimal hyperparameter settings, given the evaluation and the train
     def optimize(self):
