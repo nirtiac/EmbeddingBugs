@@ -2,7 +2,7 @@ __author__ = 'Caitrin'
 import os
 import itertools
 from openpyxl import load_workbook
-
+import cPickle as pickle
 
 class BugReport:
     def __init__(self, reportID=None, bug_id=None, summary=None, description=None, report_time=None, report_timestamp=None, status=None, commit=None, commit_timestamp=None, files=None, filesLong=None):
@@ -54,22 +54,38 @@ class DataProcessor:
             reports.append(report)
 
         os.chdir(gitpath)
-        first_commit = reports[0].commit
-        first_report_id = reports[0].reportID
+        first_commit = str(reports[0].commit)
+        first_report_id = str(reports[0].reportID)
 
         os.system("git checkout " + first_commit+"~1")
         newDirPath = newDir + first_report_id + "/"
         os.mkdir(newDirPath)
         os.system("cp -r * " + newDir)
+        last_commit = first_commit
+
+
+        #because reports is an ordered list, as inserted, so we're inserting as they are in the dataset.
+        #really have to go and verify this when you build your reconstruction function
+
         for report in reports:
-            new_commit = report.commit
-            new_report_id = report.reportID
-            'git diff --name-status 2143203 602d549 | grep ".java$" | grep "^A"'
-            'git diff --name-status 2143203 602d549 | grep ".java$" | grep "^M"'
-            'git diff --name-status 2143203 602d549 | grep ".java$" | grep "^D"'
+            new_commit = str(report.commit)
+            new_report_id = str(report.reportID)
+            newDirPath = newDir + new_report_id + "/"
+            os.mkdir(newDirPath)
+
+            #watch your double quotes around "{}"
+            os.system('git diff --name-status (%s) (%s) | grep ".java$" | grep "^A" | xargs -I "{}" mv {} (%s)' %(last_commit, new_commit, newDirPath))
+            os.system('git diff --name-status (%s) (%s) | grep ".java$" | grep "^A" | xargs -I "{}" mv {} (%s)' %(last_commit, new_commit, newDirPath))
+            os.system('git diff --name-status (%s) (%s) | grep ".java$" | grep "^A" | xargs -I "{}" mv {} (%s)' %(last_commit, new_commit, newDirPath))
+
+            last_commit = new_commit
 
 
+        #with open(out_file, "wb") as f:
+        #    for report in reports:
+        #        f.write(str(report.reportID) + "," + str(report.commit) + "\n")
 
-        with open(out_file, "wb") as f:
-            for report in reports:
-                f.write(str(report.reportID) + "," + str(report.commit) + "\n")
+        reportOutFile = project + "_reports_processed.pkl"
+        pickle.dump(reports, open("/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/" + reportOutFile))
+
+        return reports
