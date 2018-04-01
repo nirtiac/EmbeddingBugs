@@ -5,6 +5,18 @@ from gensim.sklearn_api.w2vmodel import W2VTransformer
 #TODO: need to make sure you're optimizing speed
 
 
+
+
+#TODO:
+"""
+>>> model = Word2Vec(sentences, size=100, window=5, min_count=5, workers=4)
+>>> word_vectors = model.wv
+Persist the word vectors to disk with:
+
+>>> word_vectors.save(fname)
+>>> word_vectors = KeyedVectors.load(fname)
+"""
+
 class EBModel:
 
     def __init__(self, project):
@@ -17,7 +29,15 @@ class EBModel:
         pass
 
     def maxSim(self, word, document, w2v):
-        pass
+        cur_max = float("inf")
+        for wd in document:
+            dis = w2v.wv.distance(word, wd)
+            if dis < cur_max:
+                cur_max = dis
+
+        return cur_max
+
+
     ### CAITRIN THIS IS WHERE YOU ARE: looking at this page: https://radimrehurek.com/gensim/models/word2vec.html
     #to find out how to calculate cosine similarity
 
