@@ -3,6 +3,7 @@ import os
 import itertools
 from openpyxl import load_workbook
 import cPickle as pickle
+import xml.etree.ElementTree as ET
 
 class BugReport:
     def __init__(self, reportID=None, bug_id=None, summary=None, description=None, report_time=None, report_timestamp=None, status=None, commit=None, commit_timestamp=None, files=None, filesLong=None):
@@ -73,7 +74,7 @@ class DataProcessor:
             newDirPath = newDir + new_report_id + "/"
             os.makedirs(newDirPath)
             os.system("git checkout " + new_commit)
-            print 'git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit)
+            print ('git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit))
 
             #print os.system('git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit))
             #ok I guess I  now only care about any file not about sorting them eh
@@ -93,3 +94,61 @@ class DataProcessor:
         pickle.dump(reports, open("/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/" + reportOutFile))
 
         return reports
+
+
+def readBugReport():
+    bug_reports = []
+    total = 0
+    i=0
+    path = "dataset/"
+    #project_files = ['Birt.xml', 'Eclipse_Platform_UI.xml', 'JDT.xml', 'SWT.xml']
+    project_files = ['Birt.xml', 'Eclipse_Platform_UI.xml']
+    for file in project_files:
+        tree = ET.parse(path+file)
+        root = tree.getroot()
+        for table in root.iter('table'):
+            i=i+1
+            for column in table.findall('column'):
+                if column is not None:
+                    name = column.get('name')
+                    if name == "id":
+                        reportID = column.text
+                        #print(reportID)
+                    if name=="bug_id":
+                        bug_id = column.text
+                        #print(bug_id)
+                    if name == "summary":
+                        summary = column.text
+                        #print(summary)
+                    if name=="description":
+                        description = column.text
+                        #print(description)
+                    if name == "report_time":
+                        report_time = column.text
+                        #print(report_time)
+                    if name=="report_timestamp":
+                        report_timestamp = column.text
+                        #print(report_timestamp)
+                    if name == "status":
+                        status = column.text
+                        #print(status)
+                    if name=="commit":
+                        commit = column.text
+                        #print(commit)
+                    if name == "commit_timestamp":
+                        commit_timestamp = column.text
+                        #print(commit_timestamp)
+                    if name=="files":
+                        files = column.text
+                        #print(files)
+            if (status=="resolved fixed" or status =="closed fixed" or status=="verified fixed"):
+                total= total+1
+                bug_reports.append(BugReport(reportID,bug_id,summary,description,report_time,report_timestamp,status,commit,commit_timestamp,files))
+    print("all Total:"+str(i))
+    print("final report Total:" + str(total))
+    return(bug_reports)
+
+bug_reports = readBugReport()
+##### This is just for reference, how you can access each bug report !!!
+for bug_report in bug_reports:
+    print(bug_report.bug_id)
