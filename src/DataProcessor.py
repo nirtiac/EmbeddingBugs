@@ -59,24 +59,28 @@ class DataProcessor:
 
         os.system("git checkout " + first_commit+"~1")
         newDirPath = newDir + first_report_id + "/"
-        os.mkdir(newDirPath)
+        os.makedirs(newDirPath)
         os.system("cp -r * " + newDir)
-        last_commit = first_commit
+        last_commit = first_commit + "~1"
 
 
         #because reports is an ordered list, as inserted, so we're inserting as they are in the dataset.
         #really have to go and verify this when you build your reconstruction function
 
-        for report in reports:
-            new_commit = str(report.commit)
+        for report in reports[1:]:
+            new_commit = str(report.commit) + "~1"
             new_report_id = str(report.reportID)
             newDirPath = newDir + new_report_id + "/"
-            os.mkdir(newDirPath)
+            os.makedirs(newDirPath)
+            os.system("git checkout " + new_commit)
+            print 'git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit)
 
-            #watch your double quotes around "{}"
-            os.system('git diff --name-status (%s) (%s) | grep ".java$" | grep "^A" | xargs -I "{}" mv {} (%s)' %(last_commit, new_commit, newDirPath))
-            os.system('git diff --name-status (%s) (%s) | grep ".java$" | grep "^A" | xargs -I "{}" mv {} (%s)' %(last_commit, new_commit, newDirPath))
-            os.system('git diff --name-status (%s) (%s) | grep ".java$" | grep "^A" | xargs -I "{}" mv {} (%s)' %(last_commit, new_commit, newDirPath))
+            #print os.system('git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit))
+            #ok I guess I  now only care about any file not about sorting them eh
+
+            os.system('git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp {} %s' %(last_commit, new_commit, newDirPath))
+            os.system('git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp {} %s' %(last_commit, new_commit, newDirPath))
+            os.system('git diff --name-status %s %s | grep ".java$" | grep "^D"| cut -f2| xargs -I "{}" touch %sDEL_{}' %(last_commit, new_commit, newDirPath))
 
             last_commit = new_commit
 
