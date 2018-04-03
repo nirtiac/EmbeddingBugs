@@ -141,14 +141,18 @@ def readBugReport():
                     if name=="files":
                         files = column.text
                         #print(files)
+
+            #1.Bug reports with status marked as resolved fixed, veri- fied fixed, or closed fixed were collected for evaluation
             if (status=="resolved fixed" or status =="closed fixed" or status=="verified fixed"):
-                total= total+1
-                bug_reports.append(BugReport(reportID,bug_id,summary,description,report_time,report_timestamp,status,commit,commit_timestamp,files))
+                ## 3.  Bug reports without fixed files are also ignored because they are considered not functional
+                if (files is not None):
+                    total= total+1
+                    bug_reports.append(BugReport(reportID,bug_id,summary,description,report_time,report_timestamp,status,commit,commit_timestamp,files))
     print("all Total:"+str(i))
     print("final report Total:" + str(total))
     return(bug_reports)
 
 bug_reports = readBugReport()
 ##### This is just for reference, how you can access each bug report !!!
-for bug_report in bug_reports:
-    print(bug_report.bug_id)
+#for bug_report in bug_reports:
+    #print(bug_report.bug_id +" "+bug_report.summary)
