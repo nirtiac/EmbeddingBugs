@@ -4,6 +4,7 @@ import itertools
 from openpyxl import load_workbook
 import cPickle as pickle
 import xml.etree.ElementTree as ET
+from preprocessingCodeLang import Preprocessor
 
 class BugReport:
     def __init__(self, reportID=None, bug_id=None, summary=None, description=None, report_time=None, report_timestamp=None, status=None, commit=None, commit_timestamp=None, files=None, filesLong=None):
@@ -25,6 +26,7 @@ class DataProcessor:
 
     def __init__(self):
         pass
+
 
 
     def get_stackoverflow_data(self, directory):
@@ -95,6 +97,98 @@ class DataProcessor:
 
         return reports
 
+
+    def read_report_data(self, bug_file_path):
+        wb = load_workbook(filename=bug_file_path)
+        sheetname = project.lower()
+        ws = wb[sheetname]
+        # header = [cell.value for cell in wb.rows[0]]
+
+        reports = []
+
+        for row in ws.rows[1:]:
+            args = [cell.value for cell in row]
+            report = BugReport(*args)
+            reports.append(report)
+
+        return reports
+
+
+    # where datapath is the freshly cloned repo
+    def create_file_repo(self, data_path, reports, processed_path):
+        os.chdir(data_path)
+
+        first_commit = str(reports[0].commit)
+        prev_current_commit = first_commit + "~1"
+        os.system("git checkout " + prev_current_commit)
+
+        fileSet = set()
+
+        for dir_, _, files in os.walk(data_path):
+            for fileName in files:
+                relDir = os.path.relpath(dir_, data_path)
+                relFile = os.path.join(relDir, fileName)
+                infile_path = data_path + relFile
+                outfile_path = processed_path + relFile
+                process_file(infile_path, outfile_path)
+
+
+    #where these are the raw from the sheet, unprocessed
+    def update_file_repo(self, previous_commit, current_commit, data_path, temp_path, processed_path):
+        os.system("git checkout " + new_commit)
+        prev_last_commit = previous_commit + "~1"
+        prev_current_commit = current_commit + "~1"
+
+        #temp path but you want to preserve their original file path.....
+        # need to check what git diff outputs
+
+        os.system(
+            'git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp --parents {} %s' % (
+            prev_last_commit, prev_current_commit, temp_path))
+        os.system(
+            'git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp --parents {} %s' % (
+            prev_last_commit, prev_current_commit, temp_path))
+        os.system('git diff --name-status %s %s | grep ".java$" | grep "^D"| cut -f2| xargs -I "{}" rm %s{}' % (
+        prev_last_commit, prev_current_commit, processed_path))
+
+        for dir_, _, files in os.walk(temp_path):
+            for fileName in files:
+                relDir = os.path.relpath(dir_, data_path)
+                relFile = os.path.join(relDir, fileName)
+                infile_path = temp_path + relFile
+                outfile_path = processed_path + relFile
+                process_file(infile_path, outfile_path)
+
+
+#TODO: double check logic
+
+#outputs to the same file structure, but with a different root directory. .txt files not .java
+        def process_file(self, infile_path, outfile_path):
+            pp = Preprocessor
+            with open(infile_path, "rb") as f:
+                current_comment = False
+                cur_text = ""
+                all_tokens = []
+                for line in f:
+                    if line.startswith("//"):
+                        tokens = pp.preprocessLang(line)
+                        all_tokens.append(tokens)
+                    elif current_comment:
+                        cur_text += line
+                        if line.endswith("/*"):
+                            current_comment = False
+                            tokens = pp.preprocessLang(cur_text)
+                            all_tokens.append(tokens)
+                        continue
+                    elif line.startswith("/*"):
+                        current_comment = True
+                        cur_text += line
+                    else:
+                        tokens = pp.preprocessCode(line)
+                        all_tokens.append(tokens)
+            with open(outfile_path, "wb") as outf:
+                s = ''.join(all_tokens)
+                outf.write(s)
 
 def readBugReport():
     bug_reports = []
