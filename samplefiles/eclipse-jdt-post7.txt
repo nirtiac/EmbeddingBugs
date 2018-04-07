@@ -1,2 +1,1 @@
-[write,eclips,gener,code,],[leverag,eclips,jdt,gen,class,field,method,],[one,requir,gener,method,annot,paramat,anybodi,know,write,someannot,use,jdt,],[write,normal,paramet,jdt,could,someth,like,follow,],
-@public@,@return@,@type@,@returntype@,@foo@,@some@,@annotation@,@someannotation@,@int@,@id@,@int@,@false@,
+[write,eclips,gener,code,],[leverag,eclips,jdt,gen,class,field,method,],[one,requir,gener,method,annot,paramat,],[@public@,@return@,@type@,@returntype@,@foo@,@some@,@annotation@,@someannotation@,@int@,@id@,],[anybodi,know,write,someannot,use,jdt,],[write,normal,paramet,jdt,could,someth,like,follow,],[@int@,@false@,],

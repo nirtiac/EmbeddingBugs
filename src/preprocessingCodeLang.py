@@ -9,7 +9,7 @@ class Preprocessor:
     def __init__(self):
         pass
 
-    def camel_case_split(self, identifier):
+    def camel_case_split(identifier):
         '''
 
         :param identifier: the Camel casing word we want to split
@@ -18,7 +18,7 @@ class Preprocessor:
         matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
         return [m.group(0) for m in matches]
 
-    def preprocessCode(self, code):
+    def preprocessCode(code):
         '''
         This method preprocesses the Code in the post.
         :param code: all the code from one post
@@ -37,7 +37,7 @@ class Preprocessor:
         word_list = [w for w in word_list if not w in stopwords]
         word_list = [w for w in word_list if not len(w)==1]
         for w in word_list:
-            temp = camel_case_split(w)
+            temp = Preprocessor.camel_case_split(w)
             if len(temp)>1:
                 for t in temp:
                     t = "@"+t+"@"
@@ -57,7 +57,7 @@ class Preprocessor:
         return preCode
 
 
-    def preprocessLang(self, lang):
+    def preprocessLang(lang):
         '''
             This method preprocesses the Natural language in the post.
             :param code: all the natural language from one post
@@ -83,21 +83,22 @@ class Preprocessor:
         #        preLang.append("@"+w+"@")
         return preLang
 
-
-    def readXMLFile():
+def readXMLFile():
         '''
         This method creates different files for each post, which will have language token and code tokens as @codetoken@ after preprocessing.
         :return:
         '''
+        path = "/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/src/stackOverflowPosts/"
         files = ['birt.xml', 'eclipse.xml', 'eclipse-jdt.xml', 'swt.xml']
         for file in files:
-            tree = ET.parse(file)
+            filepath = path+file
+            tree = ET.parse(filepath)
             root = tree.getroot()
             i=0
             project = file[:-4]
             for child in root:
                 i=i+1
-                file = open(project+"-post"+str(i)+".txt", "w")
+                file = open("/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/samplefiles/"+project+"-post"+str(i)+".txt", "w")
                 print(project+"-post"+str(i)+".txt")
                 if (child.attrib['Body'] is not None):
                     body = child.attrib['Body']
@@ -106,33 +107,74 @@ class Preprocessor:
                     lang=""
                     code =""
                     if str_idx == -1:
-                        lang= lang+body
+                        lang= body
+                        preLang = Preprocessor.preprocessLang(lang)
+                        for token in preLang:
+                            if len(token) >= 1:
+                                file.write("[")
+                                for t in token:
+                                    file.write(t)
+                                    file.write(",")
+                                file.write("]")
+                                file.write(",")
                     else:
                         while (str_idx != -1):
                             str_idx = body[strt_of_strng:].find('<pre><code>')
                             lst_idx = body[strt_of_strng:].find('</code></pre>')
                             if str_idx != -1:
-                                code= code+ body[strt_of_strng + str_idx:strt_of_strng + lst_idx + 13]
-                                lang = lang + body[strt_of_strng:strt_of_strng + str_idx]
+                                lang = body[strt_of_strng:strt_of_strng + str_idx]
+                                preLang = Preprocessor.preprocessLang(lang)
+                                for token in preLang:
+                                    if len(token) >= 1:
+                                        file.write("[")
+                                        for t in token:
+                                            file.write(t)
+                                            file.write(",")
+                                        file.write("]")
+                                        file.write(",")
+                                code=body[strt_of_strng + str_idx:strt_of_strng + lst_idx + 13]
+                                preCode = Preprocessor.preprocessCode(code)
+                                file.write("[")
+                                for token in preCode:
+                                    file.write(token)
+                                    file.write(",")
+                                file.write("]")
+                                file.write(",")
+
+
                             else:
-                                lang = lang + body[strt_of_strng:]
+                                lang = body[strt_of_strng:]
+                                preLang = Preprocessor.preprocessLang(lang)
+                                for token in preLang:
+                                    if len(token) >= 1:
+                                        file.write("[")
+                                        for t in token:
+                                            file.write(t)
+                                            file.write(",")
+                                        file.write("]")
+                                        file.write(",")
                             strt_of_strng = strt_of_strng + lst_idx + 13
 
-                    preCode = preprocessCode(code)
-                    preLang =preprocessLang(lang)
-                    for token in preLang:
-                        if len(token)>=1:
-                            file.write("[")
-                            for t in token:
-                                file.write(t)
-                                file.write(",")
-                            file.write("]")
-                            file.write(",")
-                    file.write("\n")
-                    for token in preCode:
-                        file.write(token)
-                        file.write(",")
+                    #preCode = Preprocessor.preprocessCode(code)
+                    #preLang =Preprocessor.preprocessLang(lang)
+                    #for token in preLang:
+                    #    if len(token)>=1:
+                    #        file.write("[")
+                    #        for t in token:
+                    #            file.write(t)
+                    #            file.write(",")
+                    #        file.write("]")
+                    #        file.write(",")
+                    #file.write("\n")
+                    #for token in preCode:
+                    #    file.write(token)
+                    #    file.write(",")
 
                 file.close()
 
-readXMLFile()
+def main():
+
+    readXMLFile()
+
+if __name__ == "__main__":
+    main()
