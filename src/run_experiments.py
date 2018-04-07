@@ -20,9 +20,19 @@ from DataProcessor import DataProcessor
 
 #TODO: call train here
 
+from src import EBModel
+from src import preprocessingCodeLang
+
 def main():
 
-    deal_with_bugreport_data()
+    preprocessingCodeLang.readXMLFile()
+    files = ['birt', 'eclipse', 'eclipse-jdt', 'swt']
+    path = "/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/samplefiles/"
+    i = 0
+    for file in files:
+        i=i+1
+        content = open("/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/samplefiles/" + file + "-post" + str(i) + ".txt","r")
+        EBModel.train(content)
 
 if __name__ == "__main__":
     main()
