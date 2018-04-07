@@ -20,8 +20,6 @@ class BugReport:
         self.files = files
         self.filesLong = filesLong
 
-
-
 class DataProcessor:
 
     def __init__(self):

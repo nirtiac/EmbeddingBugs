@@ -166,6 +166,7 @@ described in the following section."""
    #X is validation data
     #y is ground truth data
     #EXCEPT THATS NOT TRUE CAUSE YOURE PROVIDING THE DATA
+    #TODO: define two scoring function.
     def my_scorer(self, estimator, X, y):
         #THIS WILL CALL MAP AND MRR
 
@@ -185,6 +186,7 @@ described in the following section."""
                       }
 
         w2v = W2VTransformer()
+        #TODO: update this to take in two scoring functions
         clf = GridSearchCV(w2v, parameters, scoring=self.my_scorer, verbose=2, n_jobs=3)
         clf.fit(stackoverflowData, y=None)
 
