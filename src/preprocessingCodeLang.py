@@ -88,6 +88,7 @@ def readXMLFile():
         This method creates different files for each post, which will have language token and code tokens as @codetoken@ after preprocessing.
         :return:
         '''
+        ## Change this path according to your machine before running.
         path = "/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/src/stackOverflowPosts/"
         files = ['birt.xml', 'eclipse.xml', 'eclipse-jdt.xml', 'swt.xml']
         for file in files:
@@ -98,6 +99,7 @@ def readXMLFile():
             project = file[:-4]
             for child in root:
                 i=i+1
+                ## Change this path according to your machine before running.
                 file = open("/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/samplefiles/"+project+"-post"+str(i)+".txt", "w")
                 print(project+"-post"+str(i)+".txt")
                 if (child.attrib['Body'] is not None):
