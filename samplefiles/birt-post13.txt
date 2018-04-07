@@ -1,2 +1,1 @@
-upgrad,birt,ton,log,thought,rid,
-@validate@,@xml@,@validatexml@,@severe@,@not@,@allowed@,@choice@,@any@,
+[upgrad,birt,ton,log,],[@validate@,@xml@,@validatexml@,@severe@,@not@,@allowed@,@choice@,@any@,],[thought,rid,],
