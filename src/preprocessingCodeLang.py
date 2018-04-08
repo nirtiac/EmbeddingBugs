@@ -9,7 +9,7 @@ class Preprocessor:
     def __init__(self):
         pass
 
-    def camel_case_split(identifier):
+    def camel_case_split(self, identifier):
         '''
 
         :param identifier: the Camel casing word we want to split
@@ -18,7 +18,7 @@ class Preprocessor:
         matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
         return [m.group(0) for m in matches]
 
-    def preprocessCode(code):
+    def preprocessCode(self, code):
         '''
         This method preprocesses the Code in the post.
         :param code: all the code from one post
@@ -37,7 +37,7 @@ class Preprocessor:
         word_list = [w for w in word_list if not w in stopwords]
         word_list = [w for w in word_list if not len(w)==1]
         for w in word_list:
-            temp = Preprocessor.camel_case_split(w)
+            temp = self.camel_case_split(w)
             if len(temp)>1:
                 for t in temp:
                     t = "@"+t+"@"
@@ -57,7 +57,7 @@ class Preprocessor:
         return preCode
 
 
-    def preprocessLang(lang):
+    def preprocessLang(self, lang):
         '''
             This method preprocesses the Natural language in the post.
             :param code: all the natural language from one post
@@ -89,8 +89,9 @@ def readXMLFile():
         :return:
         '''
         ## Change this path according to your machine before running.
-        path = "/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/src/stackOverflowPosts/"
+        path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"
         files = ['birt.xml', 'eclipse.xml', 'eclipse-jdt.xml', 'swt.xml']
+        pp = Preprocessor()
         for file in files:
             filepath = path+file
             tree = ET.parse(filepath)
@@ -100,17 +101,18 @@ def readXMLFile():
             for child in root:
                 i=i+1
                 ## Change this path according to your machine before running.
-                file = open("/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/samplefiles/"+project+"-post"+str(i)+".txt", "w")
+                file = open("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"+project+"-post"+str(i)+".txt", "w")
                 print(project+"-post"+str(i)+".txt")
                 if (child.attrib['Body'] is not None):
-                    body = child.attrib['Body']
+                    body = child.attrib['Body'].encode('ascii', 'ignore').decode('ascii')
+
                     str_idx = body.find('<pre><code>')
                     strt_of_strng = 0
                     lang=""
                     code =""
                     if str_idx == -1:
                         lang= body
-                        preLang = Preprocessor.preprocessLang(lang)
+                        preLang = pp.preprocessLang(lang)
                         for token in preLang:
                             if len(token) >= 1:
                                 file.write("[")
@@ -125,7 +127,7 @@ def readXMLFile():
                             lst_idx = body[strt_of_strng:].find('</code></pre>')
                             if str_idx != -1:
                                 lang = body[strt_of_strng:strt_of_strng + str_idx]
-                                preLang = Preprocessor.preprocessLang(lang)
+                                preLang = pp.preprocessLang(lang)
                                 for token in preLang:
                                     if len(token) >= 1:
                                         file.write("[")
@@ -135,7 +137,7 @@ def readXMLFile():
                                         file.write("]")
                                         file.write(",")
                                 code=body[strt_of_strng + str_idx:strt_of_strng + lst_idx + 13]
-                                preCode = Preprocessor.preprocessCode(code)
+                                preCode = pp.preprocessCode(code)
                                 file.write("[")
                                 for token in preCode:
                                     file.write(token)
@@ -146,7 +148,7 @@ def readXMLFile():
 
                             else:
                                 lang = body[strt_of_strng:]
-                                preLang = Preprocessor.preprocessLang(lang)
+                                preLang = pp.preprocessLang(lang)
                                 for token in preLang:
                                     if len(token) >= 1:
                                         file.write("[")

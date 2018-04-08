@@ -247,6 +247,7 @@ def readBugReport():
     print("final report Total:" + str(total))
     return(bug_reports)
 
+
 bug_reports = readBugReport()
 ##### This is just for reference, how you can access each bug report !!!
 #for bug_report in bug_reports:

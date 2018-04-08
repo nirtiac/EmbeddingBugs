@@ -3,6 +3,8 @@ from gensim.models import Word2Vec
 from sklearn.model_selection import GridSearchCV
 from gensim.sklearn_api.w2vmodel import W2VTransformer
 import numpy as np
+from preprocessingCodeLang import Preprocessor
+from DataProcessor import DataProcessor
 #TODO: need to make sure you're optimizing speed
 
 
@@ -152,32 +154,30 @@ described in the following section."""
         t1_den = 0.0
         for w in t1:
             w_count = t1.count(w)
-            t1_num += self.maxSim(w, t2) * w_count
+            t1_num += self.maxSim(w, t2, w2v) * w_count
             t1_den += w_count
 
         t2_num = 0.0
         t2_den = 0.0
         for w in t2:
             w_count = t1.count(w)
-            t2_num += self.maxSim(w, t1) * w_count
+            t2_num += self.maxSim(w, t1, w2v) * w_count
             t2_den += w_count
 
         return 0.5(t1_num/t1_den) + (t2_num/t2_den)
 
-    #https://radimrehurek.com/gensim/sklearn_api/w2vmodel.html
-    #given our stackoverflow data, we need to create a language model. Stackoverflow data
-    #should be in the form of:
 
-   #estimator is our trained w2v model
-   #X is validation data
-    #y is ground truth data
-    #EXCEPT THATS NOT TRUE CAUSE YOURE PROVIDING THE DATA
-    #TODO: define two scoring function.
-    def my_scorer(self, estimator, X, y):
-        #THIS WILL CALL MAP AND MRR
+    def call_MAP(self, estimator, X, y):
 
-        #this needs to be a floating point number
+
+
+
         return final_score
+
+    def call_MRR(self, estimator, X, y):
+
+        return final_score
+
     #fulls specs here https://radimrehurek.com/gensim/models/word2vec.html
     def train(self):
 
@@ -192,11 +192,22 @@ described in the following section."""
                       }
 
         dp = DataProcessor()
-        data = dp.process_stackoverflow_data(self.path_to_stackoverflow_data)
+        data = dp.get_stackoverflow_data(self.path_to_stackoverflow_data)
         w2v = W2VTransformer()
-        #TODO: update this to take in two scoring functions
-        clf = GridSearchCV(w2v, parameters, scoring=self.my_scorer, verbose=2, n_jobs=3)
-        clf.fit(self.path_to_stackoverflow_data, y=None)
+        #TODO: confirm that you want to use MAP to construct the best_scoring parameter
+        #TODO: if none for CV doesn't work then you're going to have to run grid search manually with multiprocessing module
+        # see: https://stackoverflow.com/questions/44636370/scikit-learn-gridsearchcv-without-cross-validation-unsupervised-learning/44682305#44682305
+        #clf = GridSearchCV(w2v, parameters, scoring={"MPP": self.call_MRR, "MAP": self.call_MAP}, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
+
+        #current implementation version only usees MAP to score
+        clf = GridSearchCV(w2v, parameters, scoring= self.call_MAP, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
+
+        clf.fit(data, y=None)
+
+        #TODO: or perhaps actually return the best_estimator attribute? although you can call predict directly
+
+        #TODO: make sure you're saving this!!!
+        return clf
 
     def test(self, clf, X, y):
         return self.my_scorer(clf, X, y)
