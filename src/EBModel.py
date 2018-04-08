@@ -68,7 +68,7 @@ class EBModel:
             Average precision
         """
         r = np.asarray(r) != 0
-        out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
+        out = [EBModel.precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
         if not out:
             return 0.
         return np.mean(out)
@@ -89,7 +89,7 @@ class EBModel:
             Returns:
                 Mean average precision
             """
-        return np.mean([average_precision(r) for r in rs])
+        return np.mean([EBModel.average_precision(r) for r in rs])
 
     ####################This evaluation part would be edited for final version of output we get#######################
     def MRR(rs):
@@ -169,6 +169,10 @@ described in the following section."""
     #TODO: define two scoring function.
     def my_scorer(self, estimator, X, y):
         #THIS WILL CALL MAP AND MRR
+        final_score = []
+
+        final_score.append(EBModel.MAP(y))
+        final_score.append(EBModel.MRR(y))
 
         #this needs to be a floating point number
         return final_score
@@ -187,6 +191,8 @@ described in the following section."""
 
         w2v = W2VTransformer()
         #TODO: update this to take in two scoring functions
+        ## scoring === For evaluating multiple metrics, either give a list of (unique) strings or a dict with names as keys and callables as values.
+        ## hence added my_scorer is made such that it returns list for both  evaluation metrics - MAP and MRR.
         clf = GridSearchCV(w2v, parameters, scoring=self.my_scorer, verbose=2, n_jobs=3)
         clf.fit(stackoverflowData, y=None)
 
