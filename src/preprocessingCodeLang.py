@@ -3,7 +3,8 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import re
-from nltk.corpus import words
+#from nltk.corpus import words
+import enchant
 
 class Preprocessor:
     def __init__(self):
@@ -56,31 +57,35 @@ class Preprocessor:
         i = i+1
         return preCode
 
-
+    #TODO: figure out if you also want an implementation without sentence boundaries
     def preprocessLang(self, lang):
         '''
             This method preprocesses the Natural language in the post.
             :param code: all the natural language from one post
             :return: preprocessed language tokens
             '''
+
+        # OK IN THIS INSTANCE YOU ARE RETURNING A LIST OF LISTS
+        # AKA SENTENCE BOUNDADRIES
         preLang=[]
-        other_words = ['http']
         sent_text = nltk.sent_tokenize(lang)
+        d = enchant.Dict("en_US")
+       # print "SENT TEXT", sent_text
         for s in sent_text:
             word_list = nltk.word_tokenize(s)
+            #print "'WORD_LIST", word_list
             word_list = [word.lower() for word in word_list if word.isalpha()]
-            word_list = [w for w in word_list if not w in stopwords.words('english')]
-            word_list = [w for w in word_list if not w in other_words]
-            word_list = [w for w in word_list if not len(w) == 1]
+
+            for i in range(len(word_list)):
+                if not d.check(word_list[i]):
+                    word_list[i] = "@" + word_list[i] + "@"
+
+            word_list = [w for w in word_list if (w not in stopwords.words('english') or "@" in w)]
+            word_list = [w for w in word_list if not len(w) <= 2]
 
             ps = PorterStemmer()
             preLang.append([ps.stem(w) for w in word_list])
-        #### Decided to skip this, due to several issues and huge slow down in execution speed.
-        #for w in word_list:
-        #    if w in words.words():
-        #        preLang.append(w)
-        #    else:
-        #        preLang.append("@"+w+"@")
+
         return preLang
 
 def readXMLFile():
@@ -101,11 +106,10 @@ def readXMLFile():
             for child in root:
                 i=i+1
                 ## Change this path according to your machine before running.
-                file = open("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"+project+"-post"+str(i)+".txt", "w")
+                file = open("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"+project+"/"+str(i)+".txt", "w")
                 print(project+"-post"+str(i)+".txt")
                 if (child.attrib['Body'] is not None):
                     body = child.attrib['Body'].encode('ascii', 'ignore').decode('ascii')
-
                     str_idx = body.find('<pre><code>')
                     strt_of_strng = 0
                     lang=""
@@ -129,6 +133,7 @@ def readXMLFile():
                                 lang = body[strt_of_strng:strt_of_strng + str_idx]
                                 preLang = pp.preprocessLang(lang)
                                 for token in preLang:
+                                    print token
                                     if len(token) >= 1:
                                         file.write("[")
                                         for t in token:
