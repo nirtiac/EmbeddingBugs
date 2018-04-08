@@ -19,6 +19,28 @@ from DataProcessor import DataProcessor
         #reports = dp.process_bug_report_data(file_path, out_file, project, git_full_path, processed_path)
 
 #TODO: call train here
+def call_train_on_small_sample():
+    path_to_stackoverflow_data = ""
+    path_to_reports_data = ""
+    path_to_starter_repo = ""
+
+    EBM = EBMModel()
+
+    return EBM
+
+
+def call_train_birt():
+    pass
+
+def call_train_eclipse_platform_ui():
+    pass
+
+def call_train_jdt():
+    pass
+
+def call_train_swt():
+    pass
+
 
 def main():
 

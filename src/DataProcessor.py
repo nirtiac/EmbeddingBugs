@@ -188,6 +188,9 @@ class DataProcessor:
                 s = ''.join(all_tokens)
                 outf.write(s)
 
+    def process_stackoverflow_data(self, path_to_data):
+
+        pass
 def readBugReport():
     bug_reports = []
     total = 0

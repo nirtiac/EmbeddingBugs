@@ -20,8 +20,14 @@ Persist the word vectors to disk with:
 
 class EBModel:
 
-    def __init__(self, project):
-        self.project = project
+    def __init__(self, path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, train_split_index_start, train_split_index_end):
+        self.path_to_stackoverflow_data = path_to_stackoverflow_data
+        self.path_to_reports_data = path_to_reports_data
+        self.path_to_starter_repo = path_to_starter_repo
+        self.train_split_index_start = train_split_index_start
+        self.train_split_index_end = train_split_index_end
+        self.final_model = "" #TODO: figure out how not to set this as a string
+
 ####################This evaluation part would be edited for final version of output we get#######################
     def precision_at_k(r, k):
         """Score is precision @ k
@@ -173,7 +179,7 @@ described in the following section."""
         #this needs to be a floating point number
         return final_score
     #fulls specs here https://radimrehurek.com/gensim/models/word2vec.html
-    def train(self, stackoverflowData):
+    def train(self):
 
         #this describes everything you want to search over
         parameters = {'size': [100, 250, 500],
@@ -185,10 +191,12 @@ described in the following section."""
                       'iter': [1]
                       }
 
+        dp = DataProcessor()
+        data = dp.process_stackoverflow_data(self.path_to_stackoverflow_data)
         w2v = W2VTransformer()
         #TODO: update this to take in two scoring functions
         clf = GridSearchCV(w2v, parameters, scoring=self.my_scorer, verbose=2, n_jobs=3)
-        clf.fit(stackoverflowData, y=None)
+        clf.fit(self.path_to_stackoverflow_data, y=None)
 
     def test(self, clf, X, y):
         return self.my_scorer(clf, X, y)
