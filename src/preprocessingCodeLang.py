@@ -170,8 +170,7 @@ def readXMLFile():
                     #    file.write(",")
 
                 file.close()
-                if i ==9:
-                    exit(0)
+
 def main():
 
     readXMLFile()

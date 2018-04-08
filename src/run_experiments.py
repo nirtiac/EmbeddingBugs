@@ -45,6 +45,12 @@ def test_reading_in():
     dp = DataProcessor()
 
     dp.get_stackoverflow_data("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/birt/")
+    dp.get_stackoverflow_data("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse/")
+    dp.get_stackoverflow_data("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse-jdt/")
+    dp.get_stackoverflow_data("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/swt/")
+
+
+
 def main():
 
     test_reading_in()
