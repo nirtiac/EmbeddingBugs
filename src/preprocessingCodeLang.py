@@ -5,6 +5,7 @@ from nltk.stem import PorterStemmer
 import re
 #from nltk.corpus import words
 import enchant
+import string
 
 class Preprocessor:
     def __init__(self):
@@ -28,6 +29,7 @@ class Preprocessor:
         preCode = []
         word_list=[]
         i=0
+        d = enchant.Dict("en_US")
         stopwords = ['code', 'lt', 'gt', 'pre', 'xx']
         if type(code) == list:
             for sen in code:
@@ -72,17 +74,16 @@ class Preprocessor:
         d = enchant.Dict("en_US")
        # print "SENT TEXT", sent_text
         for s in sent_text:
+            s = re.sub('<[^<]+?>', '', s)
+            s = re.sub(ur"\p{P}+", "", s)
             word_list = nltk.word_tokenize(s)
             #print "'WORD_LIST", word_list
-            word_list = [word.lower() for word in word_list if word.isalpha()]
-
+            word_list = [word.lower() for word in word_list if word.isalnum()]
             for i in range(len(word_list)):
                 if not d.check(word_list[i]):
                     word_list[i] = "@" + word_list[i] + "@"
-
             word_list = [w for w in word_list if (w not in stopwords.words('english') or "@" in w)]
             word_list = [w for w in word_list if not len(w) <= 2]
-
             ps = PorterStemmer()
             preLang.append([ps.stem(w) for w in word_list])
 
@@ -104,12 +105,15 @@ def readXMLFile():
             i=0
             project = file[:-4]
             for child in root:
+
                 i=i+1
+
                 ## Change this path according to your machine before running.
                 file = open("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"+project+"/"+str(i)+".txt", "w")
                 print(project+"-post"+str(i)+".txt")
                 if (child.attrib['Body'] is not None):
                     body = child.attrib['Body'].encode('ascii', 'ignore').decode('ascii')
+
                     str_idx = body.find('<pre><code>')
                     strt_of_strng = 0
                     lang=""
@@ -119,12 +123,8 @@ def readXMLFile():
                         preLang = pp.preprocessLang(lang)
                         for token in preLang:
                             if len(token) >= 1:
-                                file.write("[")
-                                for t in token:
-                                    file.write(t)
-                                    file.write(",")
-                                file.write("]")
-                                file.write(",")
+                                file.write(",".join(token))
+                                file.write("\n")
                     else:
                         while (str_idx != -1):
                             str_idx = body[strt_of_strng:].find('<pre><code>')
@@ -133,22 +133,14 @@ def readXMLFile():
                                 lang = body[strt_of_strng:strt_of_strng + str_idx]
                                 preLang = pp.preprocessLang(lang)
                                 for token in preLang:
-                                    print token
                                     if len(token) >= 1:
-                                        file.write("[")
-                                        for t in token:
-                                            file.write(t)
-                                            file.write(",")
-                                        file.write("]")
-                                        file.write(",")
+                                        file.write(",".join(token))
+                                        file.write("\n")
+
                                 code=body[strt_of_strng + str_idx:strt_of_strng + lst_idx + 13]
                                 preCode = pp.preprocessCode(code)
-                                file.write("[")
-                                for token in preCode:
-                                    file.write(token)
-                                    file.write(",")
-                                file.write("]")
-                                file.write(",")
+                                file.write(",".join(preCode))
+                                file.write("\n")
 
 
                             else:
@@ -156,12 +148,10 @@ def readXMLFile():
                                 preLang = pp.preprocessLang(lang)
                                 for token in preLang:
                                     if len(token) >= 1:
-                                        file.write("[")
-                                        for t in token:
-                                            file.write(t)
-                                            file.write(",")
-                                        file.write("]")
-                                        file.write(",")
+                                        file.write(",".join(token))
+
+                                        file.write("\n")
+                            #TODO: why is this 13???
                             strt_of_strng = strt_of_strng + lst_idx + 13
 
                     #preCode = Preprocessor.preprocessCode(code)
@@ -180,7 +170,8 @@ def readXMLFile():
                     #    file.write(",")
 
                 file.close()
-
+                if i ==9:
+                    exit(0)
 def main():
 
     readXMLFile()

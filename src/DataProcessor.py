@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 import cPickle as pickle
 import xml.etree.ElementTree as ET
 from preprocessingCodeLang import Preprocessor
-
+import ast
 class BugReport:
     def __init__(self, reportID=None, bug_id=None, summary=None, description=None, report_time=None, report_timestamp=None, status=None, commit=None, commit_timestamp=None, files=None, filesLong=None):
         self.reportID = reportID
@@ -30,14 +30,20 @@ class DataProcessor:
     def get_stackoverflow_data(self, directory):
         sent = []
         for f_path in os.listdir(directory):
-            with open(f_path, 'r') as content_file:
-                content = content_file.read()
-                tokens = content.split()
-                code = [s for s in tokens if "@" in s]
-                nl = [s for s in tokens if "@" not in s]
-                sent.extend([zip(x, nl) for x in itertools.permutations(code, len(nl))])
-                sent.append(tokens)
+            with open(directory+f_path, 'r') as content_file:
+                for line in content_file:
+                    tokens = line.strip().split(",")
+                    if not tokens:
+                        continue
+                    code = [s for s in tokens if "@" in s]
 
+                    nl = [s for s in tokens if "@" not in s]
+
+                    sent.append(tokens)
+
+                    sent.extend([[code[i], nl[j]] for i in xrange(len(code)) for j in xrange(len(nl))])
+                    #print [zip(x, code) for x in itertools.permutations(code, len(nl))]
+                    #sent.extend([zip(x, code) for x in itertools.permutations(code, len(nl))])
         return sent
 
 
@@ -248,7 +254,7 @@ def readBugReport():
     return(bug_reports)
 
 
-bug_reports = readBugReport()
+#bug_reports = readBugReport()
 ##### This is just for reference, how you can access each bug report !!!
 #for bug_report in bug_reports:
     #print(bug_report.bug_id +" "+bug_report.summary)

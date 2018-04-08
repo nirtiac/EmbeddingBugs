@@ -41,10 +41,13 @@ def call_train_jdt():
 def call_train_swt():
     pass
 
+def test_reading_in():
+    dp = DataProcessor()
 
+    dp.get_stackoverflow_data("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/birt/")
 def main():
 
-    deal_with_bugreport_data()
+    test_reading_in()
 
 if __name__ == "__main__":
     main()
