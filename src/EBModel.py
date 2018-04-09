@@ -1,5 +1,5 @@
 __author__ = 'Caitrin'
-from gensim.models import Word2Vec
+import gensim
 from sklearn.model_selection import GridSearchCV
 from gensim.sklearn_api.w2vmodel import W2VTransformer
 import numpy as np

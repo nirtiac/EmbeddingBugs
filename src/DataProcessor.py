@@ -26,8 +26,6 @@ class DataProcessor:
     def __init__(self):
         pass
 
-
-
     def get_stackoverflow_data(self, directory):
         sent = []
         for f_path in os.listdir(directory):
@@ -108,7 +106,10 @@ class DataProcessor:
         pp = Preprocessor
         return pp.preprocessLang(text)
 
-    def read_and_process_report_data(self, bug_file_path):
+
+
+
+    def read_and_process_report_data(self, bug_file_path, project):
         wb = load_workbook(filename=bug_file_path)
         sheetname = project.lower()
         ws = wb[sheetname]
