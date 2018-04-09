@@ -70,13 +70,15 @@ class Preprocessor:
         # OK IN THIS INSTANCE YOU ARE RETURNING A LIST OF LISTS
         # AKA SENTENCE BOUNDADRIES
         preLang=[]
-        print "LANG", lang
-        sent_text = nltk.sent_tokenize(lang.encode('ascii', 'ignore').decode('ascii'))
+        lang = lang.encode('ascii', 'ignore')
+
+        sent_text = nltk.sent_tokenize(lang)
+        print sent_text
         d = enchant.Dict("en_US")
        # print "SENT TEXT", sent_text
         for s in sent_text:
             s = re.sub('<[^<]+?>', '', s)
-            s = re.sub(ur"\p{P}+", "", s)
+            s = re.sub(r"\p{P}+", "", s)
             word_list = nltk.word_tokenize(s)
             #print "'WORD_LIST", word_list
             word_list = [word.lower() for word in word_list if word.isalnum()]
@@ -86,8 +88,7 @@ class Preprocessor:
             word_list = [w for w in word_list if (w not in stopwords.words('english') or "@" in w)]
             word_list = [w for w in word_list if not len(w) <= 2]
             ps = PorterStemmer()
-            preLang.append([ps.stem(w) for w in word_list])
-
+            preLang.append([ps.stem(w).encode('ascii', 'ignore') for w in word_list])
         return preLang
 
 def readXMLFile():

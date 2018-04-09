@@ -106,9 +106,7 @@ class DataProcessor:
         pp = Preprocessor()
         return pp.preprocessLang(text)
 
-
-    #TODO: CURRENT
-
+    #THIS HAS BEEN CHECKED
     def read_and_process_report_data(self, bug_file_path, project):
         wb = load_workbook(filename=bug_file_path)
         sheetname = project.lower()
@@ -119,14 +117,15 @@ class DataProcessor:
 
         for row in ws.rows[1:]:
             args = [cell.value for cell in row]
-            print args
             report = BugReport(*args)
             reports.append(report)
 
         for report in reports:
-            print report.description, "DESCRIPTION"
-            report.processed_description = self.process_description(report.description)
-            report.files = report.files.split(" ")
+            if not report.description:
+                report.description = ""
+            text = report.summary + report.description
+            report.processed_description = self.process_description(text) #where this is a list of lists of tokenized sentences
+            report.files = report.files.split(" ") #NOTE THAT THESE ARE UNICODE. LEAVING FOR NOW
 
         return reports
 
@@ -183,6 +182,7 @@ class DataProcessor:
 
 #TODO: double check logic
 
+
 #outputs to the same file structure, but with a different root directory. .txt files not .java
         def process_file(self, infile_path, outfile_path):
             pp = Preprocessor
@@ -213,8 +213,9 @@ class DataProcessor:
 
 
     def process_stackoverflow_data(self, path_to_data):
-
         pass
+
+
 def readBugReport():
     bug_reports = []
     total = 0

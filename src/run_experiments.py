@@ -60,8 +60,10 @@ def test_train():
 def test_read_reports():
     bug_file_path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/SWT.xlsx"
     project = "swt"
-
+    #path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/swt/"
     dp = DataProcessor()
+
+    #print dp.get_stackoverflow_data(path_to_stackoverflow_data)
     dp.read_and_process_report_data(bug_file_path, project)
 
 def main():
