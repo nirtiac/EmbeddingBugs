@@ -70,7 +70,8 @@ class Preprocessor:
         # OK IN THIS INSTANCE YOU ARE RETURNING A LIST OF LISTS
         # AKA SENTENCE BOUNDADRIES
         preLang=[]
-        sent_text = nltk.sent_tokenize(lang)
+        print "LANG", lang
+        sent_text = nltk.sent_tokenize(lang.encode('ascii', 'ignore').decode('ascii'))
         d = enchant.Dict("en_US")
        # print "SENT TEXT", sent_text
         for s in sent_text:

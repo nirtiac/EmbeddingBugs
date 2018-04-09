@@ -58,11 +58,11 @@ def test_train():
     eb = EBModel()
 
 def test_read_reports():
-    bug_file_path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/Eclipse_Platform_UI.xlsx"
+    bug_file_path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/SWT.xlsx"
     project = "swt"
 
     dp = DataProcessor()
-    dp.read_and_process_report_data(bug_file_path)
+    dp.read_and_process_report_data(bug_file_path, project)
 
 def main():
 

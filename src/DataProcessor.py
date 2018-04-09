@@ -45,69 +45,69 @@ class DataProcessor:
                     #sent.extend([zip(x, code) for x in itertools.permutations(code, len(nl))])
         return sent
 
-
-    def process_bug_report_data(self, file_name, out_file, project, gitpath, newDir):
-        wb = load_workbook(filename=file_name)
-        sheetname = project.lower()
-        ws = wb[sheetname]
-        #header = [cell.value for cell in wb.rows[0]]
-
-        reports = []
-
-        for row in ws.rows[1:]:
-            args = [cell.value for cell in row]
-            report = BugReport(*args)
-            reports.append(report)
-
-        os.chdir(gitpath)
-        first_commit = str(reports[0].commit)
-        first_report_id = str(reports[0].reportID)
-
-        os.system("git checkout " + first_commit+"~1")
-        newDirPath = newDir + first_report_id + "/"
-        os.makedirs(newDirPath)
-        os.system("cp -r * " + newDir)
-        last_commit = first_commit + "~1"
-
-
-        #because reports is an ordered list, as inserted, so we're inserting as they are in the dataset.
-        #really have to go and verify this when you build your reconstruction function
-
-        for report in reports[1:]:
-            new_commit = str(report.commit) + "~1"
-            new_report_id = str(report.reportID)
-            newDirPath = newDir + new_report_id + "/"
-            os.makedirs(newDirPath)
-            os.system("git checkout " + new_commit)
-            print ('git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit))
-
-            #print os.system('git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit))
-            #ok I guess I  now only care about any file not about sorting them eh
-
-            os.system('git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp {} %s' %(last_commit, new_commit, newDirPath))
-            os.system('git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp {} %s' %(last_commit, new_commit, newDirPath))
-            os.system('git diff --name-status %s %s | grep ".java$" | grep "^D"| cut -f2| xargs -I "{}" touch %sDEL_{}' %(last_commit, new_commit, newDirPath))
-
-            last_commit = new_commit
-
-
-        #with open(out_file, "wb") as f:
-        #    for report in reports:
-        #        f.write(str(report.reportID) + "," + str(report.commit) + "\n")
-
-        reportOutFile = project + "_reports_processed.pkl"
-        pickle.dump(reports, open("/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/" + reportOutFile))
-
-        return reports
+    #
+    # def process_bug_report_data(self, file_name, out_file, project, gitpath, newDir):
+    #     wb = load_workbook(filename=file_name)
+    #     sheetname = project.lower()
+    #     ws = wb[sheetname]
+    #     #header = [cell.value for cell in wb.rows[0]]
+    #
+    #     reports = []
+    #
+    #     for row in ws.rows[1:]:
+    #         args = [cell.value for cell in row]
+    #         report = BugReport(*args)
+    #         reports.append(report)
+    #
+    #     os.chdir(gitpath)
+    #     first_commit = str(reports[0].commit)
+    #     first_report_id = str(reports[0].reportID)
+    #
+    #     os.system("git checkout " + first_commit+"~1")
+    #     newDirPath = newDir + first_report_id + "/"
+    #     os.makedirs(newDirPath)
+    #     os.system("cp -r * " + newDir)
+    #     last_commit = first_commit + "~1"
+    #
+    #
+    #     #because reports is an ordered list, as inserted, so we're inserting as they are in the dataset.
+    #     #really have to go and verify this when you build your reconstruction function
+    #
+    #     for report in reports[1:]:
+    #         new_commit = str(report.commit) + "~1"
+    #         new_report_id = str(report.reportID)
+    #         newDirPath = newDir + new_report_id + "/"
+    #         os.makedirs(newDirPath)
+    #         os.system("git checkout " + new_commit)
+    #         print ('git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit))
+    #
+    #         #print os.system('git diff --name-status %s %s | grep ".java$" | grep "^A"' %(last_commit, new_commit))
+    #         #ok I guess I  now only care about any file not about sorting them eh
+    #
+    #         os.system('git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp {} %s' %(last_commit, new_commit, newDirPath))
+    #         os.system('git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp {} %s' %(last_commit, new_commit, newDirPath))
+    #         os.system('git diff --name-status %s %s | grep ".java$" | grep "^D"| cut -f2| xargs -I "{}" touch %sDEL_{}' %(last_commit, new_commit, newDirPath))
+    #
+    #         last_commit = new_commit
+    #
+    #
+    #     #with open(out_file, "wb") as f:
+    #     #    for report in reports:
+    #     #        f.write(str(report.reportID) + "," + str(report.commit) + "\n")
+    #
+    #     reportOutFile = project + "_reports_processed.pkl"
+    #     pickle.dump(reports, open("/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/" + reportOutFile))
+    #
+    #     return reports
 
 
 
     def process_description(self, text):
-        pp = Preprocessor
+        pp = Preprocessor()
         return pp.preprocessLang(text)
 
 
-
+    #TODO: CURRENT
 
     def read_and_process_report_data(self, bug_file_path, project):
         wb = load_workbook(filename=bug_file_path)
@@ -119,10 +119,12 @@ class DataProcessor:
 
         for row in ws.rows[1:]:
             args = [cell.value for cell in row]
+            print args
             report = BugReport(*args)
             reports.append(report)
 
         for report in reports:
+            print report.description, "DESCRIPTION"
             report.processed_description = self.process_description(report.description)
             report.files = report.files.split(" ")
 
