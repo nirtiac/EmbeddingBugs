@@ -144,6 +144,8 @@ class DataProcessor:
                 relFile = os.path.join(relDir, fileName)
                 infile_path = data_path + relFile
                 outfile_path = processed_path + relFile
+                try:
+                    os.mkdirs() ##TODO: CAITRIN THIS IS WHERE YOU ARE
                 process_file(infile_path, outfile_path)
 
 

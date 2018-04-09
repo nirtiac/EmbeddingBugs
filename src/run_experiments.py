@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from DataProcessor import DataProcessor
-
+from EBModel import EBModel
 
 #def deal_with_bugreport_data():
     #dp = DataProcessor()
@@ -49,6 +49,13 @@ def test_reading_in():
     dp.get_stackoverflow_data("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse-jdt/")
     dp.get_stackoverflow_data("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/swt/")
 
+
+def test_train():
+    path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse/"
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/Eclipse_Platform_UI.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.ui"
+    path_to_processed_repo
+    eb = EBModel()
 
 
 def main():
