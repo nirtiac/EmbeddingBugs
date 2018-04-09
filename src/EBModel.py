@@ -22,13 +22,16 @@ Persist the word vectors to disk with:
 
 class EBModel:
 
-    def __init__(self, path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, train_split_index_start, train_split_index_end):
+    def __init__(self, path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, accuracy_at_k_value=10):
         self.path_to_stackoverflow_data = path_to_stackoverflow_data
         self.path_to_reports_data = path_to_reports_data
         self.path_to_starter_repo = path_to_starter_repo
+        self.path_to_processed_repo = path_to_processed_repo
+        self.path_to_temp = path_to_temp
         self.train_split_index_start = train_split_index_start
         self.train_split_index_end = train_split_index_end
         self.final_model = "" #TODO: figure out how not to set this as a string
+        self.accuracy_at_k_value = accuracy_at_k_value
 
 ####################This evaluation part would be edited for final version of output we get#######################
     def precision_at_k(r, k):
@@ -75,6 +78,7 @@ class EBModel:
         Returns:
             Average precision
         """
+        k = self.accuracy_at_k_value
         r = np.asarray(r) != 0
         out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
         if not out:
@@ -167,17 +171,53 @@ described in the following section."""
         return 0.5(t1_num/t1_den) + (t2_num/t2_den)
 
     #returns ranked set of all files, by their path relative to the root folder
-    def compare_all_files(self, file_path, repot_text):
-        pass
+    def compare_all_files(self, file_path, report_text, estimator):
+        scoring = {}
+        for dir_, _, files in os.walk(file_path):
+            for fileName in files:
+                relDir = os.path.relpath(dir_, data_path)
+                relFile = os.path.join(relDir, fileName)
+                full_path = file_path + relFile
+                with open(full_path, 'r') as content_file:
+                    content = content_file.read()
+                score = semantic_similarity(content, report_text, estimator)
+                scoring[relFile] = score
+        sorted_scoring = sorted(scoring.items(), key=operator.itemgetter(0))
 
+        return sorted_scoring
+
+
+
+    #NOTE: we're choosing precision@k where k=10
     def call_MAP(self, estimator, X, y):
         dp = DataProcessor()
 
-        for report in dp.read_and_process_report_data():
-            file_path = dp.get_path_to_processed_files
-            self.compare_all_files(file_path, report_text)
+        already_processed = False
+        previous_commit = None
+        all_scores
 
+        for report in dp.read_and_process_report_data()[self.train_split_index_start: self.train_split_index_end]:
+            report_text = report.processed_description
+            if not already_processed:
+                dp.create_file_repo(self.path_to_starter_repo, report, self.path_to_processed_repo)
+                already_processed = True
+                previous_commit = report.commit
+            else:
+                dp.update_file_repo(previous_commit, report.commit, self.path_to_starter_repo, self.path_to_temp, self.path_to_processed_repo)
 
+            #where the file comes first, then the score, sorted by score
+            sorted_scoring = self.compare_all_files(self.path_to_processed_repo, report_text, estimator)
+
+            scoring_matrix = []
+            for t in sorted_scoring[:self.accuracy_at_k_value]:
+                if t[0] in report.files:
+                    scoring_matrix.append(1)
+                else:
+                    scoring_matrix.append(0)
+
+            all_scores.append(scoring_matrix)
+
+        final_score = MAP(all_scores)
         return final_score
 
     def call_MRR(self, estimator, X, y):

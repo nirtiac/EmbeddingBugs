@@ -132,7 +132,7 @@ class DataProcessor:
     def create_file_repo(self, data_path, reports, processed_path):
         os.chdir(data_path)
 
-        first_commit = str(reports[0].commit)
+        first_commit = str(report.commit)
         prev_current_commit = first_commit + "~1"
         os.system("git checkout " + prev_current_commit)
 
@@ -203,6 +203,7 @@ class DataProcessor:
             with open(outfile_path, "wb") as outf:
                 s = ''.join(all_tokens)
                 outf.write(s)
+
 
     def process_stackoverflow_data(self, path_to_data):
 
