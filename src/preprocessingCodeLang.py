@@ -3,13 +3,15 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import re
-from nltk.corpus import words
+#from nltk.corpus import words
+import enchant
+import string
 
 class Preprocessor:
     def __init__(self):
         pass
 
-    def camel_case_split(identifier):
+    def camel_case_split(self, identifier):
         '''
 
         :param identifier: the Camel casing word we want to split
@@ -18,7 +20,7 @@ class Preprocessor:
         matches = re.finditer('.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', identifier)
         return [m.group(0) for m in matches]
 
-    def preprocessCode(code):
+    def preprocessCode(self, code):
         '''
         This method preprocesses the Code in the post.
         :param code: all the code from one post
@@ -27,6 +29,7 @@ class Preprocessor:
         preCode = []
         word_list=[]
         i=0
+        d = enchant.Dict("en_US")
         stopwords = ['code', 'lt', 'gt', 'pre', 'xx']
         if type(code) == list:
             for sen in code:
@@ -37,7 +40,7 @@ class Preprocessor:
         word_list = [w for w in word_list if not w in stopwords]
         word_list = [w for w in word_list if not len(w)==1]
         for w in word_list:
-            temp = Preprocessor.camel_case_split(w)
+            temp = self.camel_case_split(w)
             if len(temp)>1:
                 for t in temp:
                     t = "@"+t+"@"
@@ -56,31 +59,34 @@ class Preprocessor:
         i = i+1
         return preCode
 
-
-    def preprocessLang(lang):
+    #TODO: figure out if you also want an implementation without sentence boundaries
+    def preprocessLang(self, lang):
         '''
             This method preprocesses the Natural language in the post.
             :param code: all the natural language from one post
             :return: preprocessed language tokens
             '''
-        preLang=[]
-        other_words = ['http']
-        sent_text = nltk.sent_tokenize(lang)
-        for s in sent_text:
-            word_list = nltk.word_tokenize(s)
-            word_list = [word.lower() for word in word_list if word.isalpha()]
-            word_list = [w for w in word_list if not w in stopwords.words('english')]
-            word_list = [w for w in word_list if not w in other_words]
-            word_list = [w for w in word_list if not len(w) == 1]
 
+        # OK IN THIS INSTANCE YOU ARE RETURNING A LIST OF LISTS
+        # AKA SENTENCE BOUNDADRIES
+        preLang=[]
+        sent_text = nltk.sent_tokenize(lang)
+        d = enchant.Dict("en_US")
+       # print "SENT TEXT", sent_text
+        for s in sent_text:
+            s = re.sub('<[^<]+?>', '', s)
+            s = re.sub(ur"\p{P}+", "", s)
+            word_list = nltk.word_tokenize(s)
+            #print "'WORD_LIST", word_list
+            word_list = [word.lower() for word in word_list if word.isalnum()]
+            for i in range(len(word_list)):
+                if not d.check(word_list[i]):
+                    word_list[i] = "@" + word_list[i] + "@"
+            word_list = [w for w in word_list if (w not in stopwords.words('english') or "@" in w)]
+            word_list = [w for w in word_list if not len(w) <= 2]
             ps = PorterStemmer()
             preLang.append([ps.stem(w) for w in word_list])
-        #### Decided to skip this, due to several issues and huge slow down in execution speed.
-        #for w in word_list:
-        #    if w in words.words():
-        #        preLang.append(w)
-        #    else:
-        #        preLang.append("@"+w+"@")
+
         return preLang
 
 def readXMLFile():
@@ -89,8 +95,9 @@ def readXMLFile():
         :return:
         '''
         ## Change this path according to your machine before running.
-        path = "/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/src/stackOverflowPosts/"
+        path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"
         files = ['birt.xml', 'eclipse.xml', 'eclipse-jdt.xml', 'swt.xml']
+        pp = Preprocessor()
         for file in files:
             filepath = path+file
             tree = ET.parse(filepath)
@@ -98,63 +105,53 @@ def readXMLFile():
             i=0
             project = file[:-4]
             for child in root:
+
                 i=i+1
+
                 ## Change this path according to your machine before running.
-                file = open("/Users/shrutibhanderi/PycharmProjects/EmbeddingBugs/samplefiles/"+project+"-post"+str(i)+".txt", "w")
+                file = open("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"+project+"/"+str(i)+".txt", "w")
                 print(project+"-post"+str(i)+".txt")
                 if (child.attrib['Body'] is not None):
-                    body = child.attrib['Body']
+                    body = child.attrib['Body'].encode('ascii', 'ignore').decode('ascii')
+
                     str_idx = body.find('<pre><code>')
                     strt_of_strng = 0
                     lang=""
                     code =""
                     if str_idx == -1:
                         lang= body
-                        preLang = Preprocessor.preprocessLang(lang)
+                        preLang = pp.preprocessLang(lang)
                         for token in preLang:
                             if len(token) >= 1:
-                                file.write("[")
-                                for t in token:
-                                    file.write(t)
-                                    file.write(",")
-                                file.write("]")
-                                file.write(",")
+                                file.write(",".join(token))
+                                file.write("\n")
                     else:
                         while (str_idx != -1):
                             str_idx = body[strt_of_strng:].find('<pre><code>')
                             lst_idx = body[strt_of_strng:].find('</code></pre>')
                             if str_idx != -1:
                                 lang = body[strt_of_strng:strt_of_strng + str_idx]
-                                preLang = Preprocessor.preprocessLang(lang)
+                                preLang = pp.preprocessLang(lang)
                                 for token in preLang:
                                     if len(token) >= 1:
-                                        file.write("[")
-                                        for t in token:
-                                            file.write(t)
-                                            file.write(",")
-                                        file.write("]")
-                                        file.write(",")
+                                        file.write(",".join(token))
+                                        file.write("\n")
+
                                 code=body[strt_of_strng + str_idx:strt_of_strng + lst_idx + 13]
-                                preCode = Preprocessor.preprocessCode(code)
-                                file.write("[")
-                                for token in preCode:
-                                    file.write(token)
-                                    file.write(",")
-                                file.write("]")
-                                file.write(",")
+                                preCode = pp.preprocessCode(code)
+                                file.write(",".join(preCode))
+                                file.write("\n")
 
 
                             else:
                                 lang = body[strt_of_strng:]
-                                preLang = Preprocessor.preprocessLang(lang)
+                                preLang = pp.preprocessLang(lang)
                                 for token in preLang:
                                     if len(token) >= 1:
-                                        file.write("[")
-                                        for t in token:
-                                            file.write(t)
-                                            file.write(",")
-                                        file.write("]")
-                                        file.write(",")
+                                        file.write(",".join(token))
+
+                                        file.write("\n")
+                            #TODO: why is this 13???
                             strt_of_strng = strt_of_strng + lst_idx + 13
 
                     #preCode = Preprocessor.preprocessCode(code)

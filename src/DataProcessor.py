@@ -5,7 +5,7 @@ from openpyxl import load_workbook
 import cPickle as pickle
 import xml.etree.ElementTree as ET
 from preprocessingCodeLang import Preprocessor
-
+import ast
 class BugReport:
     def __init__(self, reportID=None, bug_id=None, summary=None, description=None, report_time=None, report_timestamp=None, status=None, commit=None, commit_timestamp=None, files=None, filesLong=None):
         self.reportID = reportID
@@ -19,6 +19,7 @@ class BugReport:
         self.commit_timestamp = commit_timestamp
         self.files = files
         self.filesLong = filesLong
+        self.processed_description = ""
 
 class DataProcessor:
 
@@ -30,14 +31,20 @@ class DataProcessor:
     def get_stackoverflow_data(self, directory):
         sent = []
         for f_path in os.listdir(directory):
-            with open(f_path, 'r') as content_file:
-                content = content_file.read()
-                tokens = content.split()
-                code = [s for s in tokens if "@" in s]
-                nl = [s for s in tokens if "@" not in s]
-                sent.extend([zip(x, nl) for x in itertools.permutations(code, len(nl))])
-                sent.append(tokens)
+            with open(directory+f_path, 'r') as content_file:
+                for line in content_file:
+                    tokens = line.strip().split(",")
+                    if not tokens:
+                        continue
+                    code = [s for s in tokens if "@" in s]
 
+                    nl = [s for s in tokens if "@" not in s]
+
+                    sent.append(tokens)
+
+                    sent.extend([[code[i], nl[j]] for i in xrange(len(code)) for j in xrange(len(nl))])
+                    #print [zip(x, code) for x in itertools.permutations(code, len(nl))]
+                    #sent.extend([zip(x, code) for x in itertools.permutations(code, len(nl))])
         return sent
 
 
@@ -96,7 +103,12 @@ class DataProcessor:
         return reports
 
 
-    def read_report_data(self, bug_file_path):
+
+    def process_description(self, text):
+        pp = Preprocessor
+        return pp.preprocessLang(text)
+
+    def read_and_process_report_data(self, bug_file_path):
         wb = load_workbook(filename=bug_file_path)
         sheetname = project.lower()
         ws = wb[sheetname]
@@ -109,14 +121,18 @@ class DataProcessor:
             report = BugReport(*args)
             reports.append(report)
 
+        for report in reports:
+            report.processed_description = self.process_description(report.description)
+            report.files = report.files.split(" ")
+
         return reports
 
 
     # where datapath is the freshly cloned repo
-    def create_file_repo(self, data_path, reports, processed_path):
+    def create_file_repo(self, data_path, report, processed_path):
         os.chdir(data_path)
 
-        first_commit = str(reports[0].commit)
+        first_commit = str(report.commit)
         prev_current_commit = first_commit + "~1"
         os.system("git checkout " + prev_current_commit)
 
@@ -128,6 +144,10 @@ class DataProcessor:
                 relFile = os.path.join(relDir, fileName)
                 infile_path = data_path + relFile
                 outfile_path = processed_path + relFile
+                try:
+                    os.mkdirs() ##TODO: CAITRIN THIS IS WHERE YOU ARE
+                except:
+                    pass
                 process_file(infile_path, outfile_path)
 
 
@@ -188,6 +208,10 @@ class DataProcessor:
                 s = ''.join(all_tokens)
                 outf.write(s)
 
+
+    def process_stackoverflow_data(self, path_to_data):
+
+        pass
 def readBugReport():
     bug_reports = []
     total = 0
@@ -244,7 +268,8 @@ def readBugReport():
     print("final report Total:" + str(total))
     return(bug_reports)
 
-bug_reports = readBugReport()
+
+#bug_reports = readBugReport()
 ##### This is just for reference, how you can access each bug report !!!
 #for bug_report in bug_reports:
     #print(bug_report.bug_id +" "+bug_report.summary)

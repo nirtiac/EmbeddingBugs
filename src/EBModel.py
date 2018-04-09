@@ -3,6 +3,8 @@ from gensim.models import Word2Vec
 from sklearn.model_selection import GridSearchCV
 from gensim.sklearn_api.w2vmodel import W2VTransformer
 import numpy as np
+from preprocessingCodeLang import Preprocessor
+from DataProcessor import DataProcessor
 #TODO: need to make sure you're optimizing speed
 
 
@@ -20,8 +22,17 @@ Persist the word vectors to disk with:
 
 class EBModel:
 
-    def __init__(self, project):
-        self.project = project
+    def __init__(self, path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, accuracy_at_k_value=10):
+        self.path_to_stackoverflow_data = path_to_stackoverflow_data
+        self.path_to_reports_data = path_to_reports_data
+        self.path_to_starter_repo = path_to_starter_repo
+        self.path_to_processed_repo = path_to_processed_repo
+        self.path_to_temp = path_to_temp
+        self.train_split_index_start = train_split_index_start
+        self.train_split_index_end = train_split_index_end
+        self.final_model = "" #TODO: figure out how not to set this as a string
+        self.accuracy_at_k_value = accuracy_at_k_value
+
 ####################This evaluation part would be edited for final version of output we get#######################
     def precision_at_k(r, k):
         """Score is precision @ k
@@ -67,6 +78,7 @@ class EBModel:
         Returns:
             Average precision
         """
+        k = self.accuracy_at_k_value
         r = np.asarray(r) != 0
         out = [precision_at_k(r, k + 1) for k in range(r.size) if r[k]]
         if not out:
@@ -146,34 +158,75 @@ described in the following section."""
         t1_den = 0.0
         for w in t1:
             w_count = t1.count(w)
-            t1_num += self.maxSim(w, t2) * w_count
+            t1_num += self.maxSim(w, t2, w2v) * w_count
             t1_den += w_count
 
         t2_num = 0.0
         t2_den = 0.0
         for w in t2:
             w_count = t1.count(w)
-            t2_num += self.maxSim(w, t1) * w_count
+            t2_num += self.maxSim(w, t1, w2v) * w_count
             t2_den += w_count
 
         return 0.5(t1_num/t1_den) + (t2_num/t2_den)
 
-    #https://radimrehurek.com/gensim/sklearn_api/w2vmodel.html
-    #given our stackoverflow data, we need to create a language model. Stackoverflow data
-    #should be in the form of:
+    #returns ranked set of all files, by their path relative to the root folder
+    def compare_all_files(self, file_path, report_text, estimator):
+        scoring = {}
+        for dir_, _, files in os.walk(file_path):
+            for fileName in files:
+                relDir = os.path.relpath(dir_, data_path)
+                relFile = os.path.join(relDir, fileName)
+                full_path = file_path + relFile
+                with open(full_path, 'r') as content_file:
+                    content = content_file.read()
+                score = semantic_similarity(content, report_text, estimator)
+                scoring[relFile] = score
+        sorted_scoring = sorted(scoring.items(), key=operator.itemgetter(0))
 
-   #estimator is our trained w2v model
-   #X is validation data
-    #y is ground truth data
-    #EXCEPT THATS NOT TRUE CAUSE YOURE PROVIDING THE DATA
-    #TODO: define two scoring function.
-    def my_scorer(self, estimator, X, y):
-        #THIS WILL CALL MAP AND MRR
+        return sorted_scoring
 
-        #this needs to be a floating point number
+
+    #NOTE: we're choosing precision@k where k=10
+    def call_MAP(self, estimator, X, y):
+        dp = DataProcessor()
+
+        already_processed = False
+        previous_commit = None
+        all_scores
+
+        #TODO: define path to workbook
+
+        for report in dp.read_and_process_report_data(self.path_to_workbook)[self.train_split_index_start: self.train_split_index_end]:
+            report_text = report.processed_description
+            if not already_processed:
+                dp.create_file_repo(self.path_to_starter_repo, report, self.path_to_processed_repo)
+                already_processed = True
+                previous_commit = report.commit
+            else:
+                dp.update_file_repo(previous_commit, report.commit, self.path_to_starter_repo, self.path_to_temp, self.path_to_processed_repo)
+
+            #where the file comes first, then the score, sorted by score
+            sorted_scoring = self.compare_all_files(self.path_to_processed_repo, report_text, estimator)
+
+            scoring_matrix = []
+            for t in sorted_scoring[:self.accuracy_at_k_value]:
+                if t[0] in report.files:
+                    scoring_matrix.append(1)
+                else:
+                    scoring_matrix.append(0)
+
+            all_scores.append(scoring_matrix)
+
+        final_score = MAP(all_scores)
         return final_score
+
+    def call_MRR(self, estimator, X, y):
+
+        return final_score
+
     #fulls specs here https://radimrehurek.com/gensim/models/word2vec.html
-    def train(self, stackoverflowData):
+    def train(self):
 
         #this describes everything you want to search over
         parameters = {'size': [100, 250, 500],
@@ -185,10 +238,25 @@ described in the following section."""
                       'iter': [1]
                       }
 
+        dp = DataProcessor()
+        data = dp.get_stackoverflow_data(self.path_to_stackoverflow_data)
         w2v = W2VTransformer()
-        #TODO: update this to take in two scoring functions
-        clf = GridSearchCV(w2v, parameters, scoring=self.my_scorer, verbose=2, n_jobs=3)
-        clf.fit(stackoverflowData, y=None)
+        #TODO: confirm that you want to use MAP to construct the best_scoring parameter
+        #TODO: if none for CV doesn't work then you're going to have to run grid search manually with multiprocessing module
+        # see: https://stackoverflow.com/questions/44636370/scikit-learn-gridsearchcv-without-cross-validation-unsupervised-learning/44682305#44682305
+        #clf = GridSearchCV(w2v, parameters, scoring={"MPP": self.call_MRR, "MAP": self.call_MAP}, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
+
+        #current implementation version only usees MAP to score
+        #TODO:fix map, as it that was a leftover of hwaving two scoring functions
+
+        clf = GridSearchCV(w2v, parameters, scoring= self.call_MAP, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
+
+        clf.fit(data, y=None)
+
+        #TODO: or perhaps actually return the best_estimator attribute? although you can call predict directly
+
+        #TODO: make sure you're saving this!!!
+        return clf
 
     def test(self, clf, X, y):
         return self.my_scorer(clf, X, y)
