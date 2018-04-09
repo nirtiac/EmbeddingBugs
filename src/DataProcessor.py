@@ -129,7 +129,7 @@ class DataProcessor:
 
 
     # where datapath is the freshly cloned repo
-    def create_file_repo(self, data_path, reports, processed_path):
+    def create_file_repo(self, data_path, report, processed_path):
         os.chdir(data_path)
 
         first_commit = str(report.commit)
@@ -146,6 +146,8 @@ class DataProcessor:
                 outfile_path = processed_path + relFile
                 try:
                     os.mkdirs() ##TODO: CAITRIN THIS IS WHERE YOU ARE
+                except:
+                    pass
                 process_file(infile_path, outfile_path)
 
 

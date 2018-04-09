@@ -187,7 +187,6 @@ described in the following section."""
         return sorted_scoring
 
 
-
     #NOTE: we're choosing precision@k where k=10
     def call_MAP(self, estimator, X, y):
         dp = DataProcessor()
@@ -196,7 +195,9 @@ described in the following section."""
         previous_commit = None
         all_scores
 
-        for report in dp.read_and_process_report_data()[self.train_split_index_start: self.train_split_index_end]:
+        #TODO: define path to workbook
+
+        for report in dp.read_and_process_report_data(self.path_to_workbook)[self.train_split_index_start: self.train_split_index_end]:
             report_text = report.processed_description
             if not already_processed:
                 dp.create_file_repo(self.path_to_starter_repo, report, self.path_to_processed_repo)
@@ -246,6 +247,8 @@ described in the following section."""
         #clf = GridSearchCV(w2v, parameters, scoring={"MPP": self.call_MRR, "MAP": self.call_MAP}, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
 
         #current implementation version only usees MAP to score
+        #TODO:fix map, as it that was a leftover of hwaving two scoring functions
+
         clf = GridSearchCV(w2v, parameters, scoring= self.call_MAP, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
 
         clf.fit(data, y=None)
