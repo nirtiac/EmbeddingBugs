@@ -166,10 +166,16 @@ described in the following section."""
 
         return 0.5(t1_num/t1_den) + (t2_num/t2_den)
 
+    #returns ranked set of all files, by their path relative to the root folder
+    def compare_all_files(self, file_path, repot_text):
+        pass
 
     def call_MAP(self, estimator, X, y):
+        dp = DataProcessor()
 
-
+        for report in dp.read_and_process_report_data():
+            file_path = dp.get_path_to_processed_files
+            self.compare_all_files(file_path, report_text)
 
 
         return final_score

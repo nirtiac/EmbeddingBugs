@@ -19,6 +19,7 @@ class BugReport:
         self.commit_timestamp = commit_timestamp
         self.files = files
         self.filesLong = filesLong
+        self.processed_description = ""
 
 class DataProcessor:
 
@@ -102,7 +103,12 @@ class DataProcessor:
         return reports
 
 
-    def read_report_data(self, bug_file_path):
+
+    def process_description(self, text):
+        pp = Preprocessor
+        return pp.preprocessLang(text)
+
+    def read_and_process_report_data(self, bug_file_path):
         wb = load_workbook(filename=bug_file_path)
         sheetname = project.lower()
         ws = wb[sheetname]
@@ -114,6 +120,10 @@ class DataProcessor:
             args = [cell.value for cell in row]
             report = BugReport(*args)
             reports.append(report)
+
+        for report in reports:
+            report.processed_description = self.process_description(report.description)
+            report.files = report.files.split(" ")
 
         return reports
 
