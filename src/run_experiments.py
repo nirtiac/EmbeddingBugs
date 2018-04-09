@@ -57,10 +57,17 @@ def test_train():
     path_to_processed_repo
     eb = EBModel()
 
+def test_read_reports():
+    bug_file_path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/Eclipse_Platform_UI.xlsx"
+    project = "swt"
+
+    dp = DataProcessor()
+    dp.read_and_process_report_data(bug_file_path)
 
 def main():
 
-    test_reading_in()
+    #test_reading_in()
+    test_read_reports()
 
 if __name__ == "__main__":
     main()
