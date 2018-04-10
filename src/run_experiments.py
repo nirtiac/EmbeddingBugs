@@ -3,7 +3,7 @@
 
 from DataProcessor import DataProcessor
 from EBModel import EBModel
-
+import os
 #def deal_with_bugreport_data():
     #dp = DataProcessor()
     #base_path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/"
@@ -51,11 +51,18 @@ def test_reading_in():
 
 
 def test_train():
-    path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse/"
-    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/Eclipse_Platform_UI.xlsx"
-    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.ui"
-    path_to_processed_repo
-    eb = EBModel()
+
+    path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/swt/"
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/SWT.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
+    train_split_index_start = 1
+    train_split_index_end = 30
+    final_model = "/home/ndg/users/carmst16/EmbeddingBugs/resources/model/test.py"
+    project = "swt"
+    eb = EBModel(path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project)
+    eb.train()
 
 def test_read_reports():
     bug_file_path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/SWT.xlsx"
@@ -63,13 +70,43 @@ def test_read_reports():
     #path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/swt/"
     dp = DataProcessor()
 
+    already_processed = False
+    previous_commit = None
+    all_scores = []
+    path_to_starter = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt/"
+    path_to_processed = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
     #print dp.get_stackoverflow_data(path_to_stackoverflow_data)
-    dp.read_and_process_report_data(bug_file_path, project)
+    reports = dp.read_and_process_report_data(bug_file_path, project)
+    print "finished processing"
+    for report in reports[1:2]:
+        report_text = report.processed_description
+        if not already_processed:
+            dp.create_file_repo(path_to_starter, report, path_to_processed)
+            already_processed = True
+            previous_commit = report.commit
+        else:
+            dp.update_file_repo(previous_commit, report.commit, path_to_starter, path_to_temp, path_to_processed)
+            previous_commit = report.commit
+
+        report_text = report.processed_description
+
+        for dir_, _, files in os.walk(path_to_processed):
+            for fileName in files:
+                relDir = os.path.relpath(dir_, path_to_processed)
+                relFile = os.path.join(relDir, fileName)
+                full_path = path_to_processed + relFile
+                with open(full_path, 'r') as content_file:
+                    content = content_file.readlines() #TODO: put this into separate lists if not already done
+                    l_content = []
+                    for line in content:
+                        l = line.split(",")
+                        l_content.append(l)
 
 def main():
 
     #test_reading_in()
-    test_read_reports()
-
+    #test_read_reports()
+    test_train()
 if __name__ == "__main__":
     main()

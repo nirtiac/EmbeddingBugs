@@ -6,7 +6,7 @@ import numpy as np
 from preprocessingCodeLang import Preprocessor
 from DataProcessor import DataProcessor
 #TODO: need to make sure you're optimizing speed
-
+import os
 
 
 
@@ -22,7 +22,7 @@ Persist the word vectors to disk with:
 
 class EBModel:
 
-    def __init__(self, path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, accuracy_at_k_value=10):
+    def __init__(self, path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project, accuracy_at_k_value=10,):
         self.path_to_stackoverflow_data = path_to_stackoverflow_data
         self.path_to_reports_data = path_to_reports_data
         self.path_to_starter_repo = path_to_starter_repo
@@ -30,7 +30,8 @@ class EBModel:
         self.path_to_temp = path_to_temp
         self.train_split_index_start = train_split_index_start
         self.train_split_index_end = train_split_index_end
-        self.final_model = "" #TODO: figure out how not to set this as a string
+        self.final_model = final_model
+        self.project = project
         self.accuracy_at_k_value = accuracy_at_k_value
 
 ####################This evaluation part would be edited for final version of output we get#######################
@@ -175,12 +176,17 @@ described in the following section."""
         scoring = {}
         for dir_, _, files in os.walk(file_path):
             for fileName in files:
-                relDir = os.path.relpath(dir_, data_path)
+                relDir = os.path.relpath(dir_, file_path)
                 relFile = os.path.join(relDir, fileName)
                 full_path = file_path + relFile
                 with open(full_path, 'r') as content_file:
-                    content = content_file.read()
-                score = semantic_similarity(content, report_text, estimator)
+                    content = content_file.readlines() #TODO: put this into separate lists if not already done
+                    l_content = []
+                    for line in content:
+                        l = line.split(",")
+                        l_content.append(l)
+
+                score = self.semantic_similarity(l_content, report_text, estimator)
                 scoring[relFile] = score
         sorted_scoring = sorted(scoring.items(), key=operator.itemgetter(0))
 
@@ -188,16 +194,16 @@ described in the following section."""
 
 
     #NOTE: we're choosing precision@k where k=10
-    def call_MAP(self, estimator, X, y):
+    def call_MAP(self, estimator):
         dp = DataProcessor()
 
         already_processed = False
         previous_commit = None
-        all_scores
+        all_scores = []
 
         #TODO: define path to workbook
-
-        for report in dp.read_and_process_report_data(self.path_to_workbook)[self.train_split_index_start: self.train_split_index_end]:
+        reports = dp.read_and_process_report_data(self.path_to_reports_data, self.project)
+        for report in reports[self.train_split_index_start: self.train_split_index_end]:
             report_text = report.processed_description
             if not already_processed:
                 dp.create_file_repo(self.path_to_starter_repo, report, self.path_to_processed_repo)
@@ -205,13 +211,14 @@ described in the following section."""
                 previous_commit = report.commit
             else:
                 dp.update_file_repo(previous_commit, report.commit, self.path_to_starter_repo, self.path_to_temp, self.path_to_processed_repo)
+                previous_commit = report.commit
 
             #where the file comes first, then the score, sorted by score
             sorted_scoring = self.compare_all_files(self.path_to_processed_repo, report_text, estimator)
 
             scoring_matrix = []
             for t in sorted_scoring[:self.accuracy_at_k_value]:
-                if t[0] in report.files:
+                if unicode(t[0], "utf-8") in report.files: #TODO: check here that unicode isn't causing an issue. if it is. fix.
                     scoring_matrix.append(1)
                 else:
                     scoring_matrix.append(0)
@@ -239,7 +246,7 @@ described in the following section."""
                       }
 
         dp = DataProcessor()
-        data = dp.get_stackoverflow_data(self.path_to_stackoverflow_data)
+        #data = dp.get_stackoverflow_data(self.path_to_stackoverflow_data)
         w2v = W2VTransformer()
         #TODO: confirm that you want to use MAP to construct the best_scoring parameter
         #TODO: if none for CV doesn't work then you're going to have to run grid search manually with multiprocessing module
@@ -249,13 +256,27 @@ described in the following section."""
         #current implementation version only usees MAP to score
         #TODO:fix map, as it that was a leftover of hwaving two scoring functions
 
-        clf = GridSearchCV(w2v, parameters, scoring= self.call_MAP, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
+        #TODO: put back n_jobs
+        #cv=[(slice(None), slice(None))]
+        #clf = GridSearchCV(w2v, parameters, scoring= self.call_MAP, verbose=2)
+        cur_max = 0
+        best_model = None
+        for s in parameters["size"]:
+            for w in parameters["window"]:
+                model = gensim.models.Word2Vec(sentences=data, sg=1, size=s, window=w, workers=16, hs=0, negative=25, iter=1)
+                score = call_MAP()
+                if score > cur_max:
+                    cur_max = score
+                    best_model = model
 
-        clf.fit(data, y=None)
+        #clf.fit(data, y=None)
 
         #TODO: or perhaps actually return the best_estimator attribute? although you can call predict directly
 
         #TODO: make sure you're saving this!!!
+        m = clf.best_estimator_
+        word_vectors = model.wv
+        word_vectors.save(self.final_model)
         return clf
 
     def test(self, clf, X, y):

@@ -2,7 +2,7 @@ __author__ = 'Caitrin'
 import os
 import itertools
 from openpyxl import load_workbook
-import cPickle as pickle
+#import cPickle as pickle
 import xml.etree.ElementTree as ET
 from preprocessingCodeLang import Preprocessor
 import ast
@@ -115,7 +115,12 @@ class DataProcessor:
 
         reports = []
 
+        count = 0
         for row in ws.rows[1:]:
+            if count > 100:
+                break
+            count += 1
+
             args = [cell.value for cell in row]
             report = BugReport(*args)
             reports.append(report)
@@ -129,8 +134,58 @@ class DataProcessor:
 
         return reports
 
+    #TODO: double check logic
+    # outputs to the same file structure, but with a different root directory. .txt files not .java
+    def process_file(self, infile_path, outfile_path):
+        pp = Preprocessor()
+        with open(infile_path, "rb") as f:
+            current_comment = False
+            current_code = False
+            cur_text = ""
+            cur_code = ""
+            all_tokens = []
+            for line  in f:
+                line = line.strip()
+                if line.startswith("//"):
+                    if current_code:
+                        tokens = pp.preprocessCode(cur_code)
+                        all_tokens.append(tokens)
+                        current_code = False
+                        cur_code = ""
+                    tokens = pp.preprocessLang(line)
+                    all_tokens.extend(tokens)
+                elif current_comment:
+                    cur_text += line
+                    if line.endswith("*/"):
+                     #   print line, "ended comment"
+                        current_comment = False
+                        tokens = pp.preprocessLang(cur_text)
+                        all_tokens.extend(tokens)
+                        cur_text = ""
+                    continue
+                elif line.startswith("/*"):
+                    if current_code:
+                        tokens = pp.preprocessCode(cur_code)
+                        all_tokens.append(tokens)
+                        current_code = False
+                        cur_code = ""
+                    current_comment = True
+                    cur_text += line
+                else:
+                    if current_code:
+                        cur_code += line
+                    else:
+                        current_code = True
+                        cur_code += line
+        with open(outfile_path, "wb") as outf:
+            print outfile_path
+            for l in all_tokens:
+                if not l:
+                    continue
+                s = ",".join(l)
+                outf.write(s + "\n")
 
-    # where datapath is the freshly cloned repo
+    # where datapath is the freshly cloned repocd ..
     def create_file_repo(self, data_path, report, processed_path):
         os.chdir(data_path)
 
@@ -141,21 +196,25 @@ class DataProcessor:
         fileSet = set()
 
         for dir_, _, files in os.walk(data_path):
+
             for fileName in files:
+                if not fileName.endswith(".java"):
+                    continue
                 relDir = os.path.relpath(dir_, data_path)
                 relFile = os.path.join(relDir, fileName)
                 infile_path = data_path + relFile
                 outfile_path = processed_path + relFile
-                try:
-                    os.mkdirs() ##TODO: CAITRIN THIS IS WHERE YOU ARE
-                except:
-                    pass
-                process_file(infile_path, outfile_path)
+                to_create =  os.path.dirname(outfile_path)
+                if not os.path.exists(to_create):
+                    os.makedirs(to_create)
+                out_file = outfile_path + ".txt"
+                if not os.path.isfile(out_file):
+                    self.process_file(infile_path, out_file)
 
 
     #where these are the raw from the sheet, unprocessed
     def update_file_repo(self, previous_commit, current_commit, data_path, temp_path, processed_path):
-        os.system("git checkout " + new_commit)
+        os.system("git checkout " + current_commit)
         prev_last_commit = previous_commit + "~1"
         prev_current_commit = current_commit + "~1"
 
@@ -164,7 +223,7 @@ class DataProcessor:
 
         os.system(
             'git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp --parents {} %s' % (
-            prev_last_commit, prev_current_commit, temp_path))
+            prev_last_commit, prev_current_commit, temp_path)) #TODO CHECK THAT ITS COPYING PATH CORRECLTU
         os.system(
             'git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp --parents {} %s' % (
             prev_last_commit, prev_current_commit, temp_path))
@@ -173,48 +232,21 @@ class DataProcessor:
 
         for dir_, _, files in os.walk(temp_path):
             for fileName in files:
-                relDir = os.path.relpath(dir_, data_path)
+                if not fileName.endswith(".java"):
+                    continue
+                relDir = os.path.relpath(dir_, temp_path)
                 relFile = os.path.join(relDir, fileName)
                 infile_path = temp_path + relFile
                 outfile_path = processed_path + relFile
-                process_file(infile_path, outfile_path)
-
-
-#TODO: double check logic
-
-
-#outputs to the same file structure, but with a different root directory. .txt files not .java
-        def process_file(self, infile_path, outfile_path):
-            pp = Preprocessor
-            with open(infile_path, "rb") as f:
-                current_comment = False
-                cur_text = ""
-                all_tokens = []
-                for line in f:
-                    if line.startswith("//"):
-                        tokens = pp.preprocessLang(line)
-                        all_tokens.append(tokens)
-                    elif current_comment:
-                        cur_text += line
-                        if line.endswith("/*"):
-                            current_comment = False
-                            tokens = pp.preprocessLang(cur_text)
-                            all_tokens.append(tokens)
-                        continue
-                    elif line.startswith("/*"):
-                        current_comment = True
-                        cur_text += line
-                    else:
-                        tokens = pp.preprocessCode(line)
-                        all_tokens.append(tokens)
-            with open(outfile_path, "wb") as outf:
-                s = ''.join(all_tokens)
-                outf.write(s)
-
-
-    def process_stackoverflow_data(self, path_to_data):
-        pass
-
+                to_create = os.path.dirname(outfile_path)
+                print infile_path, outfile_path
+                try:
+                    os.makedirs(to_create)
+                except:
+                    pass
+                out_file = outfile_path + ".txt" #TODO: check the file extension
+                self.process_file(infile_path, out_file)
+                os.remove(infile_path)
 
 def readBugReport():
     bug_reports = []

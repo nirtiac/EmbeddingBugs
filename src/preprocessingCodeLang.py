@@ -73,12 +73,14 @@ class Preprocessor:
         lang = lang.encode('ascii', 'ignore')
 
         sent_text = nltk.sent_tokenize(lang)
-        print sent_text
         d = enchant.Dict("en_US")
        # print "SENT TEXT", sent_text
         for s in sent_text:
+            s= s.strip()
+            s = re.sub('[^0-9a-zA-Z]+', ' ', s)
             s = re.sub('<[^<]+?>', '', s)
-            s = re.sub(r"\p{P}+", "", s)
+            s = re.sub(r"\p{P}+", " ", s)
+
             word_list = nltk.word_tokenize(s)
             #print "'WORD_LIST", word_list
             word_list = [word.lower() for word in word_list if word.isalnum()]
