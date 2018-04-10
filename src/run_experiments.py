@@ -58,10 +58,64 @@ def test_train():
     path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed/"
     path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
     train_split_index_start = 1
-    train_split_index_end = 30
+    train_split_index_end = 1
     final_model = "/home/ndg/users/carmst16/EmbeddingBugs/resources/model/test.py"
     project = "swt"
     eb = EBModel(path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project)
+    eb.train()
+def get_model_stats():
+    path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/swt/"
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/SWT.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
+    train_split_index_start = 1
+    train_split_index_end = 1
+    final_model = "/home/ndg/users/carmst16/EmbeddingBugs/resources/model/test.py"
+    project = "swt"
+    eb = EBModel(path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project)
+    eb.train()
+
+def get_model_stats_eclipse():
+    path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse/"
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/Eclipse_Platform_UI.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.ui"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
+    train_split_index_start = 1
+    train_split_index_end = 1
+    final_model = "/home/ndg/users/carmst16/EmbeddingBugs/resources/model/test.py"
+    project = "swt"
+    eb = EBModel(path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project)
+    print "ECLIPSE"
+    eb.train()
+
+def get_model_stats_jdt():
+    path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse-jdt/"
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/JDT.xlsx.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.jdt.ui"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.jdt.ui_processed/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.jdt.ui_temp/"
+    train_split_index_start = 1
+    train_split_index_end = 1
+    final_model = "/home/ndg/users/carmst16/EmbeddingBugs/resources/model/test.py"
+    project = "jdt"
+    eb = EBModel(path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project)
+    print "JDT"
+    eb.train()
+
+def get_model_stats_birt():
+    path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/birt/"
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/Birt.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
+    train_split_index_start = 1
+    train_split_index_end = 1
+    final_model = "/home/ndg/users/carmst16/EmbeddingBugs/resources/model/test.py"
+    project = "swt"
+    eb = EBModel(path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project)
+    print "BIRT"
     eb.train()
 
 def test_read_reports():
@@ -107,6 +161,11 @@ def main():
 
     #test_reading_in()
     #test_read_reports()
-    test_train()
+    #test_train()
+    #get_model_stats()
+    get_model_stats_jdt()
+    get_model_stats_birt()
+    get_model_stats_eclipse()
+
 if __name__ == "__main__":
     main()

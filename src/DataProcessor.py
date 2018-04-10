@@ -130,7 +130,7 @@ class DataProcessor:
                 report.description = ""
             text = report.summary + report.description
             report.processed_description = self.process_description(text) #where this is a list of lists of tokenized sentences
-            report.files = report.files.split(" ") #NOTE THAT THESE ARE UNICODE. LEAVING FOR NOW
+            report.files = report.files.replace("java ", "java;").split(";") #NOTE THAT THESE ARE UNICODE. LEAVING FOR NOW
 
         return reports
 
@@ -178,7 +178,6 @@ class DataProcessor:
                         current_code = True
                         cur_code += line
         with open(outfile_path, "wb") as outf:
-            print outfile_path
             for l in all_tokens:
                 if not l:
                     continue
@@ -222,12 +221,12 @@ class DataProcessor:
         # need to check what git diff outputs
 
         os.system(
-            'git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp --parents {} %s' % (
+            'git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp --parents "{}" %s' % (
             prev_last_commit, prev_current_commit, temp_path)) #TODO CHECK THAT ITS COPYING PATH CORRECLTU
         os.system(
-            'git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp --parents {} %s' % (
+            'git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp --parents "{}" %s' % (
             prev_last_commit, prev_current_commit, temp_path))
-        os.system('git diff --name-status %s %s | grep ".java$" | grep "^D"| cut -f2| xargs -I "{}" rm %s{}' % (
+        os.system('git diff --name-status %s %s | grep ".java$" | grep "^D"| cut -f2| xargs -I "{}" rm "%s{}"' % (
         prev_last_commit, prev_current_commit, processed_path))
 
         for dir_, _, files in os.walk(temp_path):
@@ -239,7 +238,6 @@ class DataProcessor:
                 infile_path = temp_path + relFile
                 outfile_path = processed_path + relFile
                 to_create = os.path.dirname(outfile_path)
-                print infile_path, outfile_path
                 try:
                     os.makedirs(to_create)
                 except:
