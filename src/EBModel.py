@@ -185,7 +185,14 @@ described in the following section."""
             for fileName in files:
                 relDir = os.path.relpath(dir_, file_path)
                 relFile = os.path.join(relDir, fileName)
-                full_path = file_path + relFile
+                full_path = file_path
+                print report.files
+            for t in sorted_scoring[:self.accuracy_at_k_value]:
+                ut = unicode(t[0], "utf-8")
+                print ut
+                if ut in report.files: #TODO: check here that unicode isn't causing an issue. if it is. fix.
+                    scoring_matrix.append(1)
+                else:+ relFile
                 with open(full_path, 'r') as content_file:
                     content = content_file.readlines() #TODO: put this into separate lists if not already done
                     l_content = []
@@ -194,6 +201,7 @@ described in the following section."""
                         l_content.append(l)
 
                 score = self.semantic_similarity(l_content, report_text, estimator)
+                print score, fileName
                 scoring[relFile] = score
         sorted_scoring = sorted(scoring.items(), key=operator.itemgetter(0))
 
@@ -226,14 +234,8 @@ described in the following section."""
             sorted_scoring = self.compare_all_files(self.path_to_processed_repo, report_text, estimator)
 
             scoring_matrix = []
-            print report.files
-            for t in sorted_scoring[:self.accuracy_at_k_value]:
-                ut = unicode(t[0], "utf-8")
-                print ut
-                if ut in report.files: #TODO: check here that unicode isn't causing an issue. if it is. fix.
-                    scoring_matrix.append(1)
-                else:
-                    scoring_matrix.append(0)
+
+            scoring_matrix.append(0)
 
             all_scores.append(scoring_matrix)
 
@@ -294,8 +296,6 @@ described in the following section."""
         print wv.similarity("@private@", "@public@")
         print wv.similarity("@private@", "browser")
         print wv.similarity("@public@", "public")
-
-
 
         print wv.doesnt_match("public static void model".split())
     def test(self, clf, X, y):

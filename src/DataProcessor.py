@@ -117,7 +117,7 @@ class DataProcessor:
 
         count = 0
         for row in ws.rows[1:]:
-            if count > 100:
+            if count > 100: #TODO: dlete this
                 break
             count += 1
 
