@@ -130,14 +130,15 @@ class EBModel:
         return np.mean([1. / (r[0] + 1) if r.size else 0. for r in rs])
 
 
-    def maxSim(self, word, document, w2v):
-        cur_max = float("inf")
+    def maxSim(self, word, document, model):
+        cur_max = 0  #TODO: check if this follows through properly
         for wd in document:
             try:
-                dis = w2v.distance(word, wd)
+                dis = model.wv.similarity(word, wd)
+            #$print dis
             except:
                 continue #TODO: double check logic
-            if dis < cur_max:
+            if dis > cur_max:
                 cur_max = dis
 
         return cur_max
@@ -159,24 +160,23 @@ described in the following section."""
     #from https://pdfs.semanticscholar.org/1374/617e135eaa772e52c9a2e8253f49483676d6.pdf
     #because we do not want to use their assymetric similarity as we are not computing other ranking algorithms
     def semantic_similarity(self, t1, t2, w2v):
-
         t1_num = 0.0
         t1_den = 0.0
         for w in t1:
             w_count = t1.count(w)
             t1_num += self.maxSim(w, t2, w2v) * w_count
-            t1_den += w_count
 
+            t1_den += w_count
         t2_num = 0.0
         t2_den = 0.0
         for w in t2:
             w_count = t1.count(w)
             t2_num += self.maxSim(w, t1, w2v) * w_count
             t2_den += w_count
-
         if t1_den == 0 or t2_den == 0:
             return 0 #TODO: check logic
-        return 0.5*((t1_num/t1_den) + (t2_num/t2_den))
+        total = 0.5*((t1_num/t1_den) + (t2_num/t2_den))
+        return total
 
     #returns ranked set of all files, by their path relative to the root folder
     def compare_all_files(self, file_path, report_text, estimator):
@@ -185,24 +185,17 @@ described in the following section."""
             for fileName in files:
                 relDir = os.path.relpath(dir_, file_path)
                 relFile = os.path.join(relDir, fileName)
-                full_path = file_path
-                print report.files
-            for t in sorted_scoring[:self.accuracy_at_k_value]:
-                ut = unicode(t[0], "utf-8")
-                print ut
-                if ut in report.files: #TODO: check here that unicode isn't causing an issue. if it is. fix.
-                    scoring_matrix.append(1)
-                else:+ relFile
+                full_path = file_path + relFile
                 with open(full_path, 'r') as content_file:
                     content = content_file.readlines() #TODO: put this into separate lists if not already done
                     l_content = []
                     for line in content:
                         l = line.strip().split(",")
-                        l_content.append(l)
+                        l_content.extend(l) #extend. I'm changing this now so that everything is in one long line
 
                 score = self.semantic_similarity(l_content, report_text, estimator)
-                print score, fileName
-                scoring[relFile] = score
+                if score != 0:
+                    scoring[relFile] = score #take off .txt
         sorted_scoring = sorted(scoring.items(), key=operator.itemgetter(0))
 
         return sorted_scoring
@@ -218,7 +211,7 @@ described in the following section."""
 
         #TODO: define path to workbook
         reports = dp.read_and_process_report_data(self.path_to_reports_data, self.project)
-        print self.train_split_index_start, self.train_split_index_end
+        #print self.train_split_index_start, self.train_split_index_end
         for report in reports[self.train_split_index_start: self.train_split_index_end]:
             print "REPORT"
             report_text = report.processed_description
@@ -230,14 +223,25 @@ described in the following section."""
                 dp.update_file_repo(previous_commit, report.commit, self.path_to_starter_repo, self.path_to_temp, self.path_to_processed_repo)
                 previous_commit = report.commit
 
+            #print report_text
+
             #where the file comes first, then the score, sorted by score
             sorted_scoring = self.compare_all_files(self.path_to_processed_repo, report_text, estimator)
 
+            #print sorted_scoring
             scoring_matrix = []
 
-            scoring_matrix.append(0)
+            for t in sorted_scoring[:self.accuracy_at_k_value]:
+                ut = unicode(t[0], "utf-8")
+                print ut
+                if ut in report.files: #TODO: check here that unicode isn't causing an issue. if it is. fix.
+                    print "woo match"
+                    scoring_matrix.append(1)
+                else:
+                    scoring_matrix.append(0)
 
             all_scores.append(scoring_matrix)
+
 
         final_score = self.MAP(all_scores)
         return final_score
@@ -280,13 +284,13 @@ described in the following section."""
         for s in parameters["size"]:
             for w in parameters["window"]:
                 model = gensim.models.Word2Vec(sentences=data, sg=1, size=s, window=w, workers=16, hs=0, negative=25, iter=1)
-                #score = self.call_MAP(model)
-                #if score > cur_max:
-                 #   cur_max = score
-                  #  best_model = model
+                score = self.call_MAP(model)
+                if score > cur_max:
+                    cur_max = score
+                    best_model = model
         #print cur_max
         word_vectors = model.wv
-        print "VOCAB_SIZE", len(model.wv.vocab)
+        #print "VOCAB_SIZE", len(model.wv.vocab)
         #word_vectors.save(self.final_model)
 
 

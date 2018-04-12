@@ -104,7 +104,7 @@ class DataProcessor:
 
     def process_description(self, text):
         pp = Preprocessor()
-        return pp.preprocessLang(text)
+        return list(itertools.chain.from_iterable(pp.preprocessLang(text))) #update to return a singe list
 
     #THIS HAS BEEN CHECKED
     def read_and_process_report_data(self, bug_file_path, project):
