@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
-import re
+import regex as re        #### Python 3 changes --original is import re
 #from nltk.corpus import words
 import enchant
 import string
@@ -70,7 +70,9 @@ class Preprocessor:
         # OK IN THIS INSTANCE YOU ARE RETURNING A LIST OF LISTS
         # AKA SENTENCE BOUNDADRIES
         preLang=[]
-        lang = lang.encode('ascii', 'ignore')
+
+        ###Changed for python 3 - Commented the below line
+        #lang = lang.encode('ascii', 'ignore')
 
         sent_text = nltk.sent_tokenize(lang)
         d = enchant.Dict("en_US")
@@ -79,7 +81,7 @@ class Preprocessor:
             s= s.strip()
             s = re.sub('[^0-9a-zA-Z]+', ' ', s)
             s = re.sub('<[^<]+?>', '', s)
-            s = re.sub(r"\p{P}+", " ", s)
+            s = re.sub(r"\p{P}+", "", s)
 
             word_list = nltk.word_tokenize(s)
             #print "'WORD_LIST", word_list
@@ -90,7 +92,7 @@ class Preprocessor:
             word_list = [w for w in word_list if (w not in stopwords.words('english') or "@" in w)]
             word_list = [w for w in word_list if not len(w) <= 2]
             ps = PorterStemmer()
-            preLang.append([ps.stem(w).encode('ascii', 'ignore') for w in word_list])
+            preLang.append([ps.stem(w) for w in word_list])          ####changed for python 3
         return preLang
 
 def readXMLFile():
@@ -99,7 +101,7 @@ def readXMLFile():
         :return:
         '''
         ## Change this path according to your machine before running.
-        path = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"
+        path = "/Users/shrutibhanderi/PycharmProjects/Updated/EmbeddingBugs_new/src/stackOverflowPosts/"
         files = ['birt.xml', 'eclipse.xml', 'eclipse-jdt.xml', 'swt.xml']
         pp = Preprocessor()
         for file in files:
@@ -112,11 +114,11 @@ def readXMLFile():
 
                 i=i+1
 
-                ## Change this path according to your machine before running.
-                file = open("/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/"+project+"/"+str(i)+".txt", "w")
+                ## Change this path according to your machine before running      .
+                file = open("/Users/shrutibhanderi/PycharmProjects/Updated/EmbeddingBugs_new/samplefiles/"+project+"/"+str(i)+".txt", "w")
                 print(project+"-post"+str(i)+".txt")
                 if (child.attrib['Body'] is not None):
-                    body = child.attrib['Body'].encode('ascii', 'ignore').decode('ascii')
+                    body = child.attrib['Body']              # Python 3 changes
 
                     str_idx = body.find('<pre><code>')
                     strt_of_strng = 0
@@ -128,7 +130,7 @@ def readXMLFile():
                         for token in preLang:
                             if len(token) >= 1:
                                 file.write(",".join(token))
-                               # file.write("\n")
+                                #file.write("\n")
                     else:
                         while (str_idx != -1):
                             str_idx = body[strt_of_strng:].find('<pre><code>')
@@ -144,7 +146,7 @@ def readXMLFile():
                                 code=body[strt_of_strng + str_idx:strt_of_strng + lst_idx + 13]
                                 preCode = pp.preprocessCode(code)
                                 file.write(",".join(preCode))
-                               # file.write("\n")
+                                #file.write("\n")
 
 
                             else:
@@ -154,7 +156,7 @@ def readXMLFile():
                                     if len(token) >= 1:
                                         file.write(",".join(token))
 
-                                       # file.write("\n")
+                                        #file.write("\n")
                             #TODO: why is this 13???
                             strt_of_strng = strt_of_strng + lst_idx + 13
 
