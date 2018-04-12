@@ -58,7 +58,7 @@ def test_train():
     path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed/"
     path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
     train_split_index_start = 1
-    train_split_index_end = 5
+    train_split_index_end = 20
     final_model = "/home/ndg/users/carmst16/EmbeddingBugs/resources/model/test.py"
     project = "swt"
     eb = EBModel(path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project)

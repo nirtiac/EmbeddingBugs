@@ -181,8 +181,12 @@ described in the following section."""
     #returns ranked set of all files, by their path relative to the root folder
     def compare_all_files(self, file_path, report_text, estimator):
         scoring = {}
+#        count = 0
         for dir_, _, files in os.walk(file_path):
             for fileName in files:
+#                if count > 100:
+#                    continue
+#                count +=1
                 relDir = os.path.relpath(dir_, file_path)
                 relFile = os.path.join(relDir, fileName)
                 full_path = file_path + relFile
@@ -212,8 +216,10 @@ described in the following section."""
         #TODO: define path to workbook
         reports = dp.read_and_process_report_data(self.path_to_reports_data, self.project)
         #print self.train_split_index_start, self.train_split_index_end
+
+        #TODO: parallelize the fuck out of this cause this is stupid slow
         for report in reports[self.train_split_index_start: self.train_split_index_end]:
-            print "REPORT"
+            print "REPORT", report.reportID
             report_text = report.processed_description
             if not already_processed:
                 dp.create_file_repo(self.path_to_starter_repo, report, self.path_to_processed_repo)
@@ -233,7 +239,8 @@ described in the following section."""
 
             for t in sorted_scoring[:self.accuracy_at_k_value]:
                 ut = unicode(t[0], "utf-8")
-                print ut
+                #print ut
+                #print report.files
                 if ut in report.files: #TODO: check here that unicode isn't causing an issue. if it is. fix.
                     print "woo match"
                     scoring_matrix.append(1)
@@ -241,9 +248,10 @@ described in the following section."""
                     scoring_matrix.append(0)
 
             all_scores.append(scoring_matrix)
-
+            print all_scores, "all_scores"
 
         final_score = self.MAP(all_scores)
+        print final_score, "final MAP score"
         return final_score
 
     def call_MRR(self, estimator, X, y):
