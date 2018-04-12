@@ -128,7 +128,7 @@ def readXMLFile():
                         for token in preLang:
                             if len(token) >= 1:
                                 file.write(",".join(token))
-                                file.write("\n")
+                               # file.write("\n")
                     else:
                         while (str_idx != -1):
                             str_idx = body[strt_of_strng:].find('<pre><code>')
@@ -139,12 +139,12 @@ def readXMLFile():
                                 for token in preLang:
                                     if len(token) >= 1:
                                         file.write(",".join(token))
-                                        file.write("\n")
+                                       # file.write("\n")
 
                                 code=body[strt_of_strng + str_idx:strt_of_strng + lst_idx + 13]
                                 preCode = pp.preprocessCode(code)
                                 file.write(",".join(preCode))
-                                file.write("\n")
+                               # file.write("\n")
 
 
                             else:
@@ -154,7 +154,7 @@ def readXMLFile():
                                     if len(token) >= 1:
                                         file.write(",".join(token))
 
-                                        file.write("\n")
+                                       # file.write("\n")
                             #TODO: why is this 13???
                             strt_of_strng = strt_of_strng + lst_idx + 13
 
