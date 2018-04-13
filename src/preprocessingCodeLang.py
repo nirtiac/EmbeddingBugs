@@ -1,3 +1,5 @@
+# encoding: utf-8
+
 import xml.etree.ElementTree as ET
 import nltk
 from nltk.corpus import stopwords
@@ -69,9 +71,9 @@ class Preprocessor:
         # OK IN THIS INSTANCE YOU ARE RETURNING A LIST OF LISTS
         # AKA SENTENCE BOUNDADRIES
         preLang=[]
-        lang = lang.encode('ascii', 'ignore')
+        sent_text = nltk.sent_tokenize(lang.encode('ascii', 'ignore').decode('ascii'))
 
-        sent_text = nltk.sent_tokenize(lang)
+        #sent_text = nltk.sent_tokenize(lang)
         d = enchant.Dict("en_US")
        # print "SENT TEXT", sent_text
         for s in sent_text:
