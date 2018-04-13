@@ -230,9 +230,9 @@ described in the following section."""
                 previous_commit = report.commit
 
             #print report_text
-
+            report_file_path = self.path_to_processed_repo + str(report.reportID) + "/"
             #where the file comes first, then the score, sorted by score
-            sorted_scoring = self.compare_all_files(self.path_to_processed_repo, report_text, estimator)
+            sorted_scoring = self.compare_all_files(report_file_path, report_text, estimator)
 
             #print sorted_scoring
             scoring_matrix = []
