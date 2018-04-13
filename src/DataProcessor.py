@@ -9,6 +9,7 @@ import xml.etree.ElementTree as ET
 from preprocessingCodeLang import Preprocessor
 import ast
 from multiprocessing import Pool
+import pathos.pools as pp
 class BugReport:
     def __init__(self, reportID=None, bug_id=None, summary=None, description=None, report_time=None, report_timestamp=None, status=None, commit=None, commit_timestamp=None, files=None, filesLong=None):
         self.reportID = reportID
@@ -117,9 +118,11 @@ class DataProcessor:
         # header = [cell.value for cell in wb.rows[0]]
 
         reports = []
-
+        count = 0
         for row in ws.rows[1:]:
-
+            if count >200:
+                break
+            count +=1
             args = [cell.value for cell in row]
             report = BugReport(*args)
             reports.append(report)
@@ -188,7 +191,9 @@ class DataProcessor:
 
     #hacky for multiprocess module
     def process_further_reports(self, report_data):
+
             report, all_processed_path, base_commit, base_path = report_data
+            print report.reportID
 
             next_path = all_processed_path + str(report.reportID +1 ) + "/"
             if os.path.exists(next_path): #aka don't bother to do it if it's already been done. requires some maintenance though so be careful
@@ -236,7 +241,9 @@ class DataProcessor:
         first_report = reports[0]
         base_commit = str(first_report.commit)
         prev_current_commit = base_commit + "~1"
+        print "calling_checkout"
         os.system("git checkout " + prev_current_commit)
+        print "done"
         base_path = all_processed_path + str(first_report.reportID) + "/"
         print base_path
         count = 0
@@ -262,7 +269,8 @@ class DataProcessor:
                     self.process_file(infile_path, out_file)
 
         report_datas = [(report, all_processed_path, base_commit, base_path) for report in reports[1:]]
-        pool = Pool(processes=16)
+        pool = pp.ProcessPool(16)
+
         res = pool.map(self.process_further_reports, report_datas)
         pool.close()
         pool.join()

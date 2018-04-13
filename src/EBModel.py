@@ -6,7 +6,7 @@ from gensim.sklearn_api.w2vmodel import W2VTransformer
 import numpy as np
 from preprocessingCodeLang import Preprocessor
 from DataProcessor import DataProcessor
-
+import pathos.pools as pp
 import os
 import operator
 
@@ -205,20 +205,8 @@ described in the following section."""
 
         return sorted_scoring
 
-
-    #NOTE: we're choosing precision@k where k=10
-    def compute_scores(self, estimator):
-        dp = DataProcessor()
-
-        already_processed = False
-        previous_commit = None
-        all_scores = []
-
-        reports = dp.read_and_process_report_data(self.path_to_reports_data, self.project)
-        #print self.train_split_index_start, self.train_split_index_end
-
-        #TODO: parallelize the fuck out of this cause this is stupid slow
-        for report in reports[self.train_split_index_start: self.train_split_index_end]:
+    def get_report_score(self, report):
+                #TODO: parallelize the fuck out of this cause this is stupid slow
             print "REPORT", report.reportID
             report_text = report.processed_description
             if not already_processed:
@@ -249,10 +237,25 @@ described in the following section."""
                 else:
                     scoring_matrix.append(0)
 
-            all_scores.append(scoring_matrix)
-            print all_scores, "all_scores"
-            final_score = self.MAP(all_scores)
-            print final_score, "current final score"
+            return scoring_matrix
+
+    #NOTE: we're choosing precision@k where k=10
+    def compute_scores(self, estimator):
+        dp = DataProcessor()
+
+        already_processed = False
+        previous_commit = None
+        all_scores = []
+
+        reports = dp.read_and_process_report_data(self.path_to_reports_data, self.project)
+        #print self.train_split_index_start, self.train_split_index_end
+
+        reports_to_process = reports[self.train_split_index_start: self.train_split_index_end]
+
+        res = pool.map(self.process_further_reports, report_datas)
+
+
+        all_scores = pool.map(self.get_report_score, reports_to_process)
 
         final_MAP_score = self.MAP(all_scores)
         final_MRR_score = self.MRR(all_scores)
