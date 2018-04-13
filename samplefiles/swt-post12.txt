@@ -1,1 +1,0 @@
-[java,vm,crash,produc,file,indic,],[error,basic,null,pointer,except,],[alway,caus,bug,jvm,caus,like,malfunct,hardwar,softwar,conflict,edit,nativ,compon,swt,applic,],

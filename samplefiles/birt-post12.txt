@@ -1,1 +1,0 @@
-[use,birt,],[abl,creat,ca,see,tabl,databas,],[tri,creat,databas,see,tabl,oracl,],
