@@ -40,7 +40,6 @@ def call_train_jdt():
 def call_train_swt():
     pass
 
-
 def process_files_swt():
     dp = DataProcessor()
     path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/SWT.xlsx"
@@ -48,6 +47,36 @@ def process_files_swt():
     path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed_split/"
     path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
     reports = dp.read_and_process_report_data(path_to_reports_data, "swt")
+    dp.process_all_files(path_to_starter_repo, reports, path_to_processed_repo, path_to_temp)
+
+
+def process_files_birt():
+    dp = DataProcessor()
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/Birt.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/birt/"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/birt_processed_split/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/birt_temp/"
+    reports = dp.read_and_process_report_data(path_to_reports_data, "birt")
+    dp.process_all_files(path_to_starter_repo, reports, path_to_processed_repo, path_to_temp)
+
+
+def process_files_jdt():
+    dp = DataProcessor()
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/JDT.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.jdt.ui/"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.jdt.ui_processed_split/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.jdt.ui_temp/"
+    reports = dp.read_and_process_report_data(path_to_reports_data, "jdt")
+    dp.process_all_files(path_to_starter_repo, reports, path_to_processed_repo, path_to_temp)
+
+
+def process_files_eclipse():
+    dp = DataProcessor()
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/Eclipse_Platform_UI.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.ui/"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.ui_processed_split/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.ui_temp/"
+    reports = dp.read_and_process_report_data(path_to_reports_data, "eclipse_platform_ui")
     dp.process_all_files(path_to_starter_repo, reports, path_to_processed_repo, path_to_temp)
 
 def test_reading_in():
@@ -170,7 +199,10 @@ def main():
     #test_reading_in()
     #test_read_reports()
     #test_train()
-    process_files_swt()
+    #process_files_swt()
+    #process_files_birt()
+    #process_files_eclipse()
+    process_files_jdt()
     #get_model_stats()
     #get_model_stats_jdt()
     #get_model_stats_birt()

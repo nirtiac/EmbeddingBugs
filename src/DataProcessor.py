@@ -212,13 +212,23 @@ class DataProcessor:
                     self.process_file(infile_path, out_file)
 
         for report in reports[1:]:
+            next_path = all_processed_path + str(report.reportID +1 ) + "/"
+            if os.path.exists(next_path): #aka don't bother to do it if it's already been done. requires some maintenance though so be careful
+                continue
             prev_commit = base_commit + "~1"
             prev_current_commit = report.commit + "~1"
             os.system("git checkout " + prev_current_commit)
             outfile_path = all_processed_path + str(report.reportID) + "/"
+
             os.makedirs(outfile_path)
 
-            os.system("cp -r %s %s" %(base_path, outfile_path))
+            os.system("cp -r %s* %s" %(base_path, outfile_path))
+
+            #make sure your temp is clean
+            fileList = os.listdir(temp_path)
+            if fileList:
+                for fileName in fileList:
+                    os.remove(temp_path+"/"+fileName)
 
         #temp path but you want to preserve their original file path.....
         # need to check what git diff outputs
@@ -263,16 +273,13 @@ class DataProcessor:
                 relFile = os.path.join(relDir, fileName)
                 infile_path = data_path + relFile
                 outfile_path = processed_path + relFile
-                to_create =  os.path.dirname(outfile_path)
+                to_create = os.path.dirname(outfile_path)
                 if not os.path.exists(to_create):
                     os.makedirs(to_create)
                 out_file = outfile_path + ".txt"
                 self.process_file(infile_path, out_file)
 
-
-
-
-    #where these are the raw from the sheet, unprocessed
+    # where these are the raw from the sheet, unprocessed
     def update_file_repo(self, previous_commit, current_commit, data_path, temp_path, processed_path):
         os.system("git checkout " + current_commit)
         prev_last_commit = previous_commit + "~1"
