@@ -18,7 +18,6 @@ import os
         #processed_path = base_gitpath + gitpaths[counter][:-1] + "processed/"
         #reports = dp.process_bug_report_data(file_path, out_file, project, git_full_path, processed_path)
 
-#TODO: call train here
 def call_train_on_small_sample():
     path_to_stackoverflow_data = ""
     path_to_reports_data = ""
@@ -41,6 +40,16 @@ def call_train_jdt():
 def call_train_swt():
     pass
 
+
+def process_files_swt():
+    dp = DataProcessor()
+    path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/SWT.xlsx"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt/"
+    path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed_split/"
+    path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
+    reports = dp.read_and_process_report_data(path_to_reports_data, "swt")
+    dp.process_all_files(path_to_starter_repo, reports, path_to_processed_repo, path_to_temp)
+
 def test_reading_in():
     dp = DataProcessor()
 
@@ -54,7 +63,7 @@ def test_train():
 
     path_to_stackoverflow_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/swt/"
     path_to_reports_data = "/home/ndg/users/carmst16/EmbeddingBugs/resources/bugreport/SWT.xlsx"
-    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt"
+    path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt/"
     path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed/"
     path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
     train_split_index_start = 1
@@ -151,8 +160,7 @@ def test_read_reports():
                 relFile = os.path.join(relDir, fileName)
                 full_path = path_to_processed + relFile
                 with open(full_path, 'r') as content_file:
-                    content = content_file.readlines() #TODO: put this into separate lists if not already done
-                    l_content = []
+                    content = content_file.readlines()
                     for line in content:
                         l = line.split(",")
                         l_content.append(l)
@@ -161,7 +169,8 @@ def main():
 
     #test_reading_in()
     #test_read_reports()
-    test_train()
+    #test_train()
+    process_files_swt()
     #get_model_stats()
     #get_model_stats_jdt()
     #get_model_stats_birt()

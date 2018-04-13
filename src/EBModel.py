@@ -7,12 +7,10 @@ import numpy as np
 from preprocessingCodeLang import Preprocessor
 from DataProcessor import DataProcessor
 
-#TODO: need to make sure you're optimizing speed
 import os
 import operator
 
 
-#TODO:
 """
 >>> model = Word2Vec(sentences, size=100, window=5, min_count=5, workers=4)
 >>> word_vectors = model.wv
@@ -24,7 +22,8 @@ Persist the word vectors to disk with:
 
 class EBModel:
 
-    def __init__(self, path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project, accuracy_at_k_value=10,):
+    #TODO: remember that you changed your k..
+    def __init__(self, path_to_stackoverflow_data, path_to_reports_data, path_to_starter_repo, path_to_processed_repo, path_to_temp, train_split_index_start, train_split_index_end, final_model, project, accuracy_at_k_value=100,):
         self.path_to_stackoverflow_data = path_to_stackoverflow_data
         self.path_to_reports_data = path_to_reports_data
         self.path_to_starter_repo = path_to_starter_repo
@@ -131,13 +130,13 @@ class EBModel:
 
 
     def maxSim(self, word, document, model):
-        cur_max = 0  #TODO: check if this follows through properly
+        cur_max = 0
         for wd in document:
             try:
                 dis = model.wv.similarity(word, wd)
             #$print dis
             except:
-                continue #TODO: double check logic
+                continue
             if dis > cur_max:
                 cur_max = dis
 
@@ -174,24 +173,26 @@ described in the following section."""
             t2_num += self.maxSim(w, t1, w2v) * w_count
             t2_den += w_count
         if t1_den == 0 or t2_den == 0:
-            return 0 #TODO: check logic
+            return 0
         total = 0.5*((t1_num/t1_den) + (t2_num/t2_den))
         return total
 
     #returns ranked set of all files, by their path relative to the root folder
     def compare_all_files(self, file_path, report_text, estimator):
         scoring = {}
-#        count = 0
+        count = 0
         for dir_, _, files in os.walk(file_path):
             for fileName in files:
-#                if count > 100:
-#                    continue
-#                count +=1
+
+                if count > 300:
+                    continue
+                #print count
+                count +=1
                 relDir = os.path.relpath(dir_, file_path)
                 relFile = os.path.join(relDir, fileName)
                 full_path = file_path + relFile
                 with open(full_path, 'r') as content_file:
-                    content = content_file.readlines() #TODO: put this into separate lists if not already done
+                    content = content_file.readlines()
                     l_content = []
                     for line in content:
                         l = line.strip().split(",")
@@ -206,14 +207,13 @@ described in the following section."""
 
 
     #NOTE: we're choosing precision@k where k=10
-    def call_MAP(self, estimator):
+    def compute_scores(self, estimator):
         dp = DataProcessor()
 
         already_processed = False
         previous_commit = None
         all_scores = []
 
-        #TODO: define path to workbook
         reports = dp.read_and_process_report_data(self.path_to_reports_data, self.project)
         #print self.train_split_index_start, self.train_split_index_end
 
@@ -236,12 +236,14 @@ described in the following section."""
 
             #print sorted_scoring
             scoring_matrix = []
-
-            for t in sorted_scoring[:self.accuracy_at_k_value]:
+            print report.files[0], type(report.files[0])
+            for t in sorted_scoring:
+            #for t in sorted_scoring[:self.accuracy_at_k_value]:
                 ut = unicode(t[0], "utf-8")
+                print ut, type(ut)
                 #print ut
                 #print report.files
-                if ut in report.files: #TODO: check here that unicode isn't causing an issue. if it is. fix.
+                if ut in report.files:
                     print "woo match"
                     scoring_matrix.append(1)
                 else:
@@ -249,12 +251,13 @@ described in the following section."""
 
             all_scores.append(scoring_matrix)
             print all_scores, "all_scores"
+            final_score = self.MAP(all_scores)
+            print final_score, "current final score"
 
-        final_score = self.MAP(all_scores)
-        print final_score, "final MAP score"
-        return final_score
-
-    def call_MRR(self, estimator, X, y):
+        final_MAP_score = self.MAP(all_scores)
+        final_MRR_score = self.MRR(all_scores)
+        print final_MAP_score, "final MAP score"
+        print final_MRR_score, "final MAP score"
 
         return final_score
 
@@ -274,25 +277,20 @@ described in the following section."""
         dp = DataProcessor()
         data = dp.get_stackoverflow_data(self.path_to_stackoverflow_data)
         w2v = W2VTransformer()
-        #TODO: confirm that you want to use MAP to construct the best_scoring parameter
-        #TODO: if none for CV doesn't work then you're going to have to run grid search manually with multiprocessing module
         # see: https://stackoverflow.com/questions/44636370/scikit-learn-gridsearchcv-without-cross-validation-unsupervised-learning/44682305#44682305
         #clf = GridSearchCV(w2v, parameters, scoring={"MPP": self.call_MRR, "MAP": self.call_MAP}, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
 
         #current implementation version only usees MAP to score
-        #TODO:fix map, as it that was a leftover of hwaving two scoring functions
-
-        #TODO: put back n_jobs
         #cv=[(slice(None), slice(None))]
-        #clf = GridSearchCV(w2v, parameters, scoring= self.call_MAP, verbose=2)
+        #clf = GridSearchCV(w2v, parameters, scoring= self.compute_scores, verbose=2)
         cur_max = 0
         best_model = None
         parameters["size"] = [100]
         parameters["window"] = [5]
         for s in parameters["size"]:
             for w in parameters["window"]:
-                model = gensim.models.Word2Vec(sentences=data, sg=1, size=s, window=w, workers=16, hs=0, negative=25, iter=1)
-                score = self.call_MAP(model)
+                model = gensim.models.Word2Vec(sentences=data, sg=1, size=s, window=w, workers=16, hs=0, negative=25, iter=5)
+                score = self.compute_scores(model)
                 if score > cur_max:
                     cur_max = score
                     best_model = model

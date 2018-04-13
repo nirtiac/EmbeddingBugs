@@ -115,11 +115,7 @@ class DataProcessor:
 
         reports = []
 
-        count = 0
         for row in ws.rows[1:]:
-            if count > 100: #TODO: dlete this
-                break
-            count += 1
 
             args = [cell.value for cell in row]
             report = BugReport(*args)
@@ -134,7 +130,9 @@ class DataProcessor:
 
         return reports
 
-    #TODO: double check logic
+
+
+    # please note that this no longer outputs the code from a source code file.... only the natural language
     # outputs to the same file structure, but with a different root directory. .txt files not .java
     def process_file(self, infile_path, outfile_path):
         pp = Preprocessor()
@@ -148,8 +146,8 @@ class DataProcessor:
                 line = line.strip()
                 if line.startswith("//"):
                     if current_code:
-                        tokens = pp.preprocessCode(cur_code)
-                        all_tokens.append(tokens)
+                        #tokens = pp.preprocessCode(cur_code)
+                        #all_tokens.append(tokens) #let's just give this a shot
                         current_code = False
                         cur_code = ""
                     tokens = pp.preprocessLang(line)
@@ -165,24 +163,86 @@ class DataProcessor:
                     continue
                 elif line.startswith("/*"):
                     if current_code:
-                        tokens = pp.preprocessCode(cur_code)
-                        all_tokens.append(tokens)
+                        #tokens = pp.preprocessCode(cur_code)
+                        #all_tokens.append(tokens)
                         current_code = False
                         cur_code = ""
                     current_comment = True
                     cur_text += line
                 else:
-                    if current_code:
-                        cur_code += line
-                    else:
-                        current_code = True
-                        cur_code += line
+                    pass
+                    #if current_code:
+                     #   cur_code += line
+                    #else:
+                     #   current_code = True
+                      #  cur_code += line
         with open(outfile_path, "wb") as outf:
             for l in all_tokens:
                 if not l:
                     continue
                 s = ",".join(l)
                 outf.write(s + "\n")
+
+    def process_all_files(self, cloned_repo_path, reports, all_processed_path, temp_path):
+        os.chdir(cloned_repo_path)
+        first_report = reports[0]
+        base_commit = str(first_report.commit)
+        prev_current_commit = base_commit + "~1"
+        os.system("git checkout " + prev_current_commit)
+        base_path = all_processed_path + str(first_report.reportID) + "/"
+        print base_path
+        count = 0
+        for dir_, _, files in os.walk(cloned_repo_path):
+            for fileName in files:
+                count +=1
+                print count
+                print fileName
+                if not fileName.endswith(".java"):
+                    continue
+                relDir = os.path.relpath(dir_, cloned_repo_path)
+                relFile = os.path.join(relDir, fileName)
+                infile_path = cloned_repo_path + relFile
+                outfile_path = all_processed_path + str(first_report.reportID) + "/" + relFile
+                to_create = os.path.dirname(outfile_path)
+
+                if not os.path.exists(to_create):
+                    os.makedirs(to_create)
+                out_file = outfile_path + ".txt"
+                if not os.path.isfile(out_file): #so I don't have to reinitialize every time, but I still run a quick sanity check
+                    self.process_file(infile_path, out_file)
+
+        for report in reports[1:]:
+            prev_commit = base_commit + "~1"
+            prev_current_commit = report.commit + "~1"
+            os.system("git checkout " + prev_current_commit)
+            outfile_path = all_processed_path + str(report.reportID) + "/"
+            os.makedirs(outfile_path)
+
+            os.system("cp -r %s %s" %(base_path, outfile_path))
+
+        #temp path but you want to preserve their original file path.....
+        # need to check what git diff outputs
+
+            os.system('git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp --parents "{}" %s' % (prev_commit, prev_current_commit, temp_path))
+            os.system('git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp --parents "{}" %s' % (prev_commit, prev_current_commit, temp_path))
+            os.system('git diff --name-status %s %s | grep ".java$" | grep "^D"| cut -f2| xargs -I "{}" rm "%s{}"' % (prev_commit, prev_current_commit, outfile_path))
+
+            for dir_, _, files in os.walk(temp_path):
+                for fileName in files:
+                    if not fileName.endswith(".java"):
+                        continue
+                    relDir = os.path.relpath(dir_, temp_path)
+                    relFile = os.path.join(relDir, fileName)
+                    infile_path = temp_path + relFile
+                    outfile_path = all_processed_path + str(report.reportID) + "/" + relFile
+                    to_create = os.path.dirname(outfile_path)
+                    try:
+                        os.makedirs(to_create)
+                    except:
+                        pass
+                    out_file = outfile_path + ".txt"
+                    self.process_file(infile_path, out_file)
+                    os.remove(infile_path)
 
     # where datapath is the freshly cloned repocd ..
     def create_file_repo(self, data_path, report, processed_path):
@@ -207,8 +267,9 @@ class DataProcessor:
                 if not os.path.exists(to_create):
                     os.makedirs(to_create)
                 out_file = outfile_path + ".txt"
-                if not os.path.isfile(out_file):
-                    self.process_file(infile_path, out_file)
+                self.process_file(infile_path, out_file)
+
+
 
 
     #where these are the raw from the sheet, unprocessed
@@ -222,7 +283,7 @@ class DataProcessor:
 
         os.system(
             'git diff --name-status %s %s | grep ".java$" | grep "^A" | cut -f2 | xargs -I "{}" cp --parents "{}" %s' % (
-            prev_last_commit, prev_current_commit, temp_path)) #TODO CHECK THAT ITS COPYING PATH CORRECLTU
+            prev_last_commit, prev_current_commit, temp_path))
         os.system(
             'git diff --name-status %s %s | grep ".java$" | grep "^M" | cut -f2 | xargs -I "{}" cp --parents "{}" %s' % (
             prev_last_commit, prev_current_commit, temp_path))
@@ -242,7 +303,7 @@ class DataProcessor:
                     os.makedirs(to_create)
                 except:
                     pass
-                out_file = outfile_path + ".txt" #TODO: check the file extension
+                out_file = outfile_path + ".txt"
                 self.process_file(infile_path, out_file)
                 os.remove(infile_path)
 

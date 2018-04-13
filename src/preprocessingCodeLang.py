@@ -59,7 +59,6 @@ class Preprocessor:
         i = i+1
         return preCode
 
-    #TODO: figure out if you also want an implementation without sentence boundaries
     def preprocessLang(self, lang):
         '''
             This method preprocesses the Natural language in the post.
@@ -155,7 +154,6 @@ def readXMLFile():
                                         file.write(",".join(token))
 
                                        # file.write("\n")
-                            #TODO: why is this 13???
                             strt_of_strng = strt_of_strng + lst_idx + 13
 
                     #preCode = Preprocessor.preprocessCode(code)
