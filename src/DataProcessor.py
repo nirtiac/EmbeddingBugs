@@ -61,6 +61,8 @@ class DataProcessor:
         return sent
 
     def get_stackoverflow_data_sentences(self, directory):
+        d = enchant.Dict("en_US")
+
         sent = []
         for f_path in os.listdir(directory):
             with open(directory+f_path, 'r') as content_file:
@@ -82,6 +84,8 @@ class DataProcessor:
         return sent
 
     def get_stackoverflow_data_document(self, directory):
+        d = enchant.Dict("en_US")
+
         all_sent = []
         for f_path in os.listdir(directory):
             with open(directory+f_path, 'r') as content_file:
@@ -96,9 +100,9 @@ class DataProcessor:
 
                 all_sent.extend([[document_code[i], document_nl[j]] for i in xrange(len(document_code)) for j in xrange(len(document_nl))])
                 all_sent.append(tokens)
-                for t in code:
+                for t in document_code:
                     if d.check(t[1:-1]):
-                        sent.append([t, t[1:-1]])
+                        all_sent.append([t, t[1:-1]])
         return all_sent
 
     #

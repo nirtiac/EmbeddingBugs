@@ -126,8 +126,8 @@ def get_model_stats_swt():
     path_to_starter_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt/"
     path_to_processed_repo = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_processed_split_text/"
     path_to_temp = "/home/ndg/users/carmst16/EmbeddingBugs/resources/source_files/test/eclipse.platform.swt_temp/"
-    train_split_index_start = 11
-    train_split_index_end = 40
+    train_split_index_start = 1
+    train_split_index_end = 30
     accuracy_at_k_value = 100
 
     final_model = "/home/ndg/users/carmst16/EmbeddingBugs/resources/model/test.py"

@@ -36,7 +36,9 @@ class EBModel:
         self.project = project
         self.accuracy_at_k_value = accuracy_at_k_value
         self.cur_estimator = None
-        self.document = False
+        self.document = True
+
+
 
 ####################This evaluation part would be edited for final version of output we get#######################
     def precision_at_k(self, r, k):
@@ -345,9 +347,9 @@ described in the following section."""
         dp = DataProcessor()
         data = dp.get_stackoverflow_data_sentences_all(["/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/swt/", "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/birt/", "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse/", "/home/ndg/users/carmst16/EmbeddingBugs/resources/stackexchangedata/eclipse-jdt/"])
         #if self.document:
-        #    data = dp.get_stackoverflow_data_document(self.path_to_stackoverflow_data)
+         #   data = dp.get_stackoverflow_data_document(self.path_to_stackoverflow_data)
         #else:
-        #    data = dp.get_stackoverflow_data_sentences(self.path_to_stackoverflow_data)
+          #  data = dp.get_stackoverflow_data_sentences(self.path_to_stackoverflow_data)
         w2v = W2VTransformer()
         # see: https://stackoverflow.com/questions/44636370/scikit-learn-gridsearchcv-without-cross-validation-unsupervised-learning/44682305#44682305
         #clf = GridSearchCV(w2v, parameters, scoring={"MPP": self.call_MRR, "MAP": self.call_MAP}, verbose=2, n_jobs=3, refit="MAP", cv=[(slice(None), slice(None))])
@@ -363,7 +365,7 @@ described in the following section."""
             for w in parameters["window"]:
                 print len(data)
                 print "training model"
-                model = gensim.models.Word2Vec(sentences=data, sg=1, size=s, window=w, workers=16, hs=0, negative=25, iter=1)
+                model = gensim.models.Word2Vec(sentences=data, sg=1, size=s, window=w, workers=16, hs=0, negative=25, iter=5)
                 print "model trained"
                 print parameters
                 score = self.compute_scores(model)
